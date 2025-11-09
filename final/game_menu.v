@@ -1,8 +1,8 @@
 `timescale 1ns / 1ps
 
-module menu_select #(
+module game_menu #(
     parameter NUM_TEMPLATES = 4,      // number of selectable templates
-    parameter CNT_WIDTH = 2           // log2(NUM_TEMPLATES)
+    parameter CNT_WIDTH = 2           // log2(NUM_TEMPLATES) //
 )(
     input  wire        clk,           // system clock
     input  wire        reset,         // async reset
