@@ -1,3 +1,7 @@
+
+//////////  Player_move module: left right, built-in jump(left, 0, right), auto facing, overshoot prevention
+//////////  TODO: testing
+
 module player_move #(
     parameter POS_WIDTH = 10,
     parameter GROUND_Y  = 10, 

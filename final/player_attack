@@ -1,0 +1,35 @@
+
+//////////  player_attack module: attack1, attack2
+//////////  TODO: testing, inter-state concurrency. 
+
+module player_attack #(
+    parameter POS_WIDTH = 10,
+
+    parameter SPEED     = 4'd2, 
+    
+)(
+    input   wire clk,
+    input   wire reset,
+    input   wire SCEN,
+    input   wire attack1,
+    input   wire attack2,
+    //input wire attacl3, , 
+    
+   
+    output reg x_lock,   /// Lock x during jump   TODO: egde case when hitting /// boundary 
+    output reg face_right,
+    output reg move_active, 
+    output_reg jump_active               /// local jump state
+);
+
+ // --- Sequential FSM (simple position update) ---
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            
+        end
+        else if (SCEN) begin
+            
+        end
+    end
+endmodule
+
