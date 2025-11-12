@@ -1,113 +1,96 @@
-module player_core (
+module player_core #(
+    parameter POS_WIDTH = 10
+)(
     input  wire clk,
     input  wire reset,
+    input  wire SCEN,
 
-    // player control inputs
-    input  wire move_btn,
-    input  wire attack_btn,        // TODO detailed controls
+    // raw input
+    input  wire move_left,
+    input  wire move_right,
+    input  wire jump,
+    input  wire attack1,
+    input  wire attack2,
 
-    // external events
-    input  wire opponent_attack,   // attack signal from opponent
-    input  wire hit_in,            // hit flag from resolver
+    // from resolver
+    input  wire hitstun_active,
+
+    // opponent x position for facing logic
+    input  wire [POS_WIDTH-1:0] opponent_x,
 
     // outputs
-    output reg  [2:0] action_state,  // 000=idle,001=move,010=attack,011=block,100=hit
-    output reg         block_active, // 1 when blocking
-    output reg         attack_active,// 1 when attacking
-    output reg         move_active,  // 1 when moving
-    output reg         hit_active    // 1 when hit
+    output wire [POS_WIDTH-1:0] pos_x,
+    output wire [POS_WIDTH-1:0] pos_y,
+    output wire face_right,
+    output wire attack_active,
+    output wire [1:0] attack_type,
+    output wire [5:0] attack_frame,
+    output wire [11:0] sprite_id
 );
 
-    // State encoding
-    localparam IDLE    = 3'b000;
-    localparam MOVE    = 3'b001;
-    localparam JUMP    = 3'b010;   // ROLL? 
-    localparam BLOCK   = 3'b011;
-    localparam ATTACK1 = 3'b100; 
-    localparam ATTACK2 = 3'b101;
-    localparam HIT     = 3'b111;
+    wire move_enable, attack_enable;
+    wire move_active, jump_active;
+    wire [5:0] jump_frame;
 
-    reg [2:0] next_state;
+    // ---------------- PLAYER_STATE ----------------
+    player_state pst (
+        .clk(clk), .reset(reset), .SCEN(SCEN),
+        .move_left(move_left), .move_right(move_right),
+        .jump(jump), .attack1(attack1), .attack2(attack2),
+        .hitstun_active(hitstun_active),
+        .attack_busy(attack_active),
+        .jump_active(jump_active),
+        .move_enable(move_enable),
+        .attack_enable(attack_enable)
+    );
 
-    //-------------------------------------------------
-    // Next-state logic (combinational)
-    //-------------------------------------------------
-    always @(*) begin
-        next_state = action_state;
+    // ---------------- MOVE ----------------
+    player_move pmv (
+        .clk(clk), .reset(reset), .SCEN(SCEN),
+        .move_enable(move_enable),
+        .move_left(move_left), .move_right(move_right),
+        .jump(jump),
+        .opponent_x(opponent_x),
+        .pos_x(pos_x), .pos_y(pos_y),
+        .x_lock(),
+        .facing_right(face_right),
+        .move_active(move_active),
+        .jump_active(jump_active)
+    );
 
-        case (action_state)
-            IDLE: begin
-                if (hit_in)
-                    next_state = HIT;
-                else if (attack_btn)
-                    next_state = ATTACK;
-                else if (move_btn)
-                    next_state = MOVE;
-                else if (opponent_attack)
-                    next_state = BLOCK;
-                else
-                    next_state = IDLE;
-            end
+    // ---------------- ATTACK ----------------
+    player_attack patk (
+        .clk(clk), .reset(reset), .SCEN(SCEN),
+        .attack_enable(attack_enable),
+        .attack1(attack1), .attack2(attack2),
+        .attack_active(attack_active),
+        .attack_type(attack_type),
+        .attack_frame(attack_frame),
+        .attack_busy()
+    );
 
-            MOVE: begin
-                if (hit_in)
-                    next_state = HIT;
-                else if (!move_btn)
-                    next_state = IDLE;
-            end
+    // ---------------- ANIMATION ----------------
+    wire [3:0] anim_state;
+    wire [5:0] anim_frame;
 
-            ATTACK: begin
-                if (hit_in)
-                    next_state = HIT;
-                else if (!attack_btn)
-                    next_state = IDLE;
-            end
+    player_state_anim pana (
+        .clk(clk), .reset(reset), .SCEN(SCEN),
+        .hitstun_active(hitstun_active),
+        .attack_active(attack_active),
+        .attack_type(attack_type),
+        .attack_frame(attack_frame),
+        .move_active(move_active),
+        .jump_active(jump_active),
+        .jump_frame(6'd0),
+        .anim_state(anim_state),
+        .anim_frame(anim_frame)
+    );
 
-            BLOCK: begin
-                if (hit_in)
-                    next_state = HIT;
-                else if (move_btn || attack_btn)
-                    next_state = IDLE; // cancel block on action
-                else if (!opponent_attack)
-                    next_state = IDLE; // stop blocking if attack gone
-            end
-
-            HIT: begin
-                // recovery logic can be expanded with a counter
-                next_state = IDLE;
-            end
-
-            default: next_state = IDLE;
-        endcase
-    end
-
-    //-------------------------------------------------
-    // Sequential state register
-    //-------------------------------------------------
-    always @(posedge clk or posedge reset) begin
-        if (reset)
-            action_state <= IDLE;
-        else
-            action_state <= next_state;
-    end
-
-    //-------------------------------------------------
-    // Output control logic
-    //-------------------------------------------------
-    always @(*) begin
-        // defaults
-        move_active   = 0;
-        attack_active = 0;
-        block_active  = 0;
-        hit_active    = 0;
-
-        case (action_state)
-            IDLE:   ;
-            MOVE:   move_active   = 1;
-            ATTACK: attack_active = 1;
-            BLOCK:  block_active  = 1;
-            HIT:    hit_active    = 1;
-        endcase
-    end
+    // ---------------- SPRITE MAP ----------------
+    sprite_mapper sm (
+        .anim_state(anim_state),
+        .anim_frame(anim_frame),
+        .sprite_id(sprite_id)
+    );
 
 endmodule

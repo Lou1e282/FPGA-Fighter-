@@ -1,119 +1,113 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Engineer: Louie Shen
-// Module: core_player_block
-// Description:
-//   Automatic block controller for a fighting game character.
-//
-//   - Character blocks automatically when neutral and threatened.
-//   - Any action (attack, move, jump, dash, special) disables auto-block
-//     until the character has returned to neutral for N frames.
-//
-//   Attack and Move states are separate inputs for clarity.
-//
-//////////////////////////////////////////////////////////////////////////////////
-
-module core_player_block #(
-    parameter GUARD_WINDOW         = 3,  // threat detection grace frames
-    parameter INHIBIT_CLEAR_FRAMES = 2   // neutral frames before re-enabling block
-)(
+module player_core (
     input  wire clk,
-    input  wire rst,
+    input  wire reset,
 
-    // Opponent threat inputs
-    input  wire op_hitbox_active,
-    input  wire op_is_grab,
-    input  wire in_front,
-    input  wire within_guard_range,
-    input  wire guard_break,
+    // player control inputs
+    input  wire move_btn,
+    input  wire attack_btn,        // TODO detailed controls
 
-    // Player state inputs
-    input  wire atk_active,           // 1 while performing attack animation
-    input  wire move_active,          // 1 while moving/dashing/jumping
-    input  wire atk_start_pulse,      // 1-cycle pulse when attack starts
-    input  wire move_start_pulse,     // 1-cycle pulse when movement starts
-    input  wire returned_to_neutral,  // 1-cycle pulse when back to idle
-    input  wire hitstun,
-    input  wire blockstun,
+    // external events
+    input  wire opponent_attack,   // attack signal from opponent
+    input  wire hit_in,            // hit flag from resolver
 
-    // Output
-    output reg  is_blocking
+    // outputs
+    output reg  [2:0] action_state,  // 000=idle,001=move,010=attack,011=block,100=hit
+    output reg         block_active, // 1 when blocking
+    output reg         attack_active,// 1 when attacking
+    output reg         move_active,  // 1 when moving
+    output reg         hit_active    // 1 when hit
 );
 
-    // ============================================================
-    // Threat detection window (simple shift register)
-    // ============================================================
-    reg [GUARD_WINDOW-1:0] threat_sr;
-    wire threat_now;
-    wire threat_window;
+    // State encoding
+    localparam IDLE    = 3'b000;
+    localparam MOVE    = 3'b001;
+    localparam JUMP    = 3'b010;   // ROLL? 
+    localparam BLOCK   = 3'b011;
+    localparam ATTACK1 = 3'b100; 
+    localparam ATTACK2 = 3'b101;
+    localparam HIT     = 3'b111;
 
-    assign threat_now    = op_hitbox_active && in_front && within_guard_range && !op_is_grab;
-    assign threat_window = |threat_sr | threat_now;
+    reg [2:0] next_state;
 
-    always @(posedge clk or posedge rst) begin
-        if (rst)
-            threat_sr <= {GUARD_WINDOW{1'b0}};
-        else
-            threat_sr <= {threat_sr[GUARD_WINDOW-2:0], threat_now};
-    end
+    //-------------------------------------------------
+    // Next-state logic (combinational)
+    //-------------------------------------------------
+    always @(*) begin
+        next_state = action_state;
 
-    // ============================================================
-    // Combine attack + movement as a unified action
-    // ============================================================
-    wire action_active = atk_active || move_active;
-    wire action_start  = atk_start_pulse || move_start_pulse;
-
-    // ============================================================
-    // Block inhibit logic
-    // ============================================================
-    reg [$clog2(INHIBIT_CLEAR_FRAMES+1)-1:0] neutral_cnt;
-    reg block_inhibit;
-
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            block_inhibit <= 1'b0;
-            neutral_cnt   <= '0;
-        end else begin
-            if (action_start) begin
-                // Disable blocking immediately on any new action
-                block_inhibit <= 1'b1;
-                neutral_cnt   <= '0;
-            end else if (returned_to_neutral && block_inhibit) begin
-                // Wait neutral frames before re-enabling block
-                if (neutral_cnt >= INHIBIT_CLEAR_FRAMES) begin
-                    block_inhibit <= 1'b0;
-                    neutral_cnt   <= '0;
-                end else begin
-                    neutral_cnt <= neutral_cnt + 1'b1;
-                end
-            end else if (action_active) begin
-                // Still performing an action → reset counter
-                neutral_cnt <= '0;
+        case (action_state)
+            IDLE: begin
+                if (hit_in)
+                    next_state = HIT;
+                else if (attack_btn)
+                    next_state = ATTACK;
+                else if (move_btn)
+                    next_state = MOVE;
+                else if (opponent_attack)
+                    next_state = BLOCK;
+                else
+                    next_state = IDLE;
             end
-        end
+
+            MOVE: begin
+                if (hit_in)
+                    next_state = HIT;
+                else if (!move_btn)
+                    next_state = IDLE;
+            end
+
+            ATTACK: begin
+                if (hit_in)
+                    next_state = HIT;
+                else if (!attack_btn)
+                    next_state = IDLE;
+            end
+
+            BLOCK: begin
+                if (hit_in)
+                    next_state = HIT;
+                else if (move_btn || attack_btn)
+                    next_state = IDLE; // cancel block on action
+                else if (!opponent_attack)
+                    next_state = IDLE; // stop blocking if attack gone
+            end
+
+            HIT: begin
+                // recovery logic can be expanded with a counter
+                next_state = IDLE;
+            end
+
+            default: next_state = IDLE;
+        endcase
     end
 
-    // ============================================================
-    // Auto-block control logic
-    // ============================================================
-    wire can_block;
-    wire block_request;
+    //-------------------------------------------------
+    // Sequential state register
+    //-------------------------------------------------
+    always @(posedge clk or posedge reset) begin
+        if (reset)
+            action_state <= IDLE;
+        else
+            action_state <= next_state;
+    end
 
-    assign can_block     = !action_active && !hitstun && !blockstun && !guard_break;
-    assign block_request = can_block && !block_inhibit && threat_window;
+    //-------------------------------------------------
+    // Output control logic
+    //-------------------------------------------------
+    always @(*) begin
+        // defaults
+        move_active   = 0;
+        attack_active = 0;
+        block_active  = 0;
+        hit_active    = 0;
 
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            is_blocking <= 1'b0;
-        end else if (hitstun || blockstun || action_active || guard_break) begin
-            // Cancel block if performing action, in stun, or guard-broken
-            is_blocking <= 1'b0;
-        end else if (block_request) begin
-            // Auto-block if idle and under threat
-            is_blocking <= 1'b1;
-        end else begin
-            is_blocking <= 1'b0;
-        end
+        case (action_state)
+            IDLE:   ;
+            MOVE:   move_active   = 1;
+            ATTACK: attack_active = 1;
+            BLOCK:  block_active  = 1;
+            HIT:    hit_active    = 1;
+        endcase
     end
 
 endmodule
