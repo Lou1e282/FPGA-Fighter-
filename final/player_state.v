@@ -1,3 +1,5 @@
+/// Handles player states, 
+
 module player_state (
     input  wire clk,
     input  wire reset,
@@ -11,10 +13,10 @@ module player_state (
     input  wire attack2,
 
     // from game_resolver
-    input  wire hitstun_active,     // overrides everything
+    input  wire hitstun_active,     // top priority
 
     // from attack / move modules
-    input  wire attack_busy,
+    input  wire attack_busy,        // move & attack
     input  wire jump_active,
 
     // enables
@@ -38,7 +40,7 @@ module player_state (
 
             // ---------------- ATTACK PRIORITY ----------------------
             else if (!attack_busy && (attack1 || attack2)) begin
-                move_enable   <= 1'b0;
+                move_enable   <= 1'b0;    /// TODO: overlap attack and move
                 attack_enable <= 1'b1;
             end
 

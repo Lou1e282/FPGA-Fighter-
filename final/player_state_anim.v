@@ -64,10 +64,10 @@ module player_state_anim (
             end
 
             // ---------- LOSE ----------
-            else if (lose_active) begin
-                anim_state <= S_LOSE;
-                anim_frame <= lose;              /// lose state 
-            end
+            // else if (lose_active) begin
+            //     anim_state <= S_LOSE;
+            //     anim_frame <= lose;              /// lose state 
+            // end
 
             // ---------- IDLE ----------
             else begin

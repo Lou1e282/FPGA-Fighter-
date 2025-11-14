@@ -1,3 +1,5 @@
+// ---------------- Instantiate core game logic  ---------- 
+
 module game_core (
     input wire clk,
     input wire reset,
