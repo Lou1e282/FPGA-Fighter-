@@ -126,7 +126,7 @@ module game_resolver #(
             unique case (p1_attack_type)
                 2'd1: begin p1_aw=ATK1_W; p1_ah=ATK1_H;
                               p1_ax = $signed(p1_x) + (p1_face_right ? +ATK1_FWD : -(ATK1_FWD+ATK1_W));   ///redundant
-                              p1_ay = $signed(p1_y) + ATK1_UP;
+                              p1_ay = $signed(p1_y) + ATK1_UP;    // TODO attack down
                       end
                 2'd2: begin p1_aw=ATK2_W; p1_ah=ATK2_H;
                               p1_ax = $signed(p1_x) + (p1_face_right ? +ATK2_FWD : -(ATK2_FWD+ATK2_W));
