@@ -25,10 +25,11 @@ module top_vga_mobility (
     // ---------------------
     wire [9:0] hcount;
     wire [9:0] vcount;
+    wire frame_tick = (hcount == 0 && vcount == 0);         // 1 pulse per frame
     wire       visible;
 
     vga_640x480 vga_core (
-        .clk(pixclk),
+        .clk(pixclk)
         .hsync(hsync),
         .vsync(vsync),
         .hcount(hcount),
@@ -49,7 +50,7 @@ module top_vga_mobility (
     player_move p1 (
         .clk(pixclk),
         .reset(reset_btn),
-        .SCEN(1'b1),
+        .SCEN(frame_tick),
         .move_enable(1'b1),
         .move_left(btn_left),
         .move_right(btn_right),
