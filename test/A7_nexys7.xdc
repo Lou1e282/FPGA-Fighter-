@@ -5,59 +5,17 @@ set_property PACKAGE_PIN E3 [get_ports ClkPort]
 	set_property IOSTANDARD LVCMOS33 [get_ports ClkPort]
 	create_clock -add -name ClkPort -period 10.00 [get_ports ClkPort]
 
-set_property PACKAGE_PIN T10 [get_ports {Ca}] 
-	set_property IOSTANDARD LVCMOS33 [get_ports {Ca}]
+set_property PACKAGE_PIN P17 [get_ports {btn_left}]     ;# BtnL
+set_property IOSTANDARD LVCMOS33 [get_ports {btn_left}]
 
-set_property PACKAGE_PIN R10 [get_ports {Cb}] 
-	set_property IOSTANDARD LVCMOS33 [get_ports {Cb}]
+set_property PACKAGE_PIN M17 [get_ports {btn_right}]    ;# BtnR
+set_property IOSTANDARD LVCMOS33 [get_ports {btn_right}]
 
-set_property PACKAGE_PIN K16 [get_ports {Cc}] 
-	set_property IOSTANDARD LVCMOS33 [get_ports {Cc}]
+set_property PACKAGE_PIN M18 [get_ports {btn_jump}]     ;# BtnU
+set_property IOSTANDARD LVCMOS33 [get_ports {btn_jump}]
 
-set_property PACKAGE_PIN K13 [get_ports {Cd}] 
-	set_property IOSTANDARD LVCMOS33 [get_ports {Cd}]
-
-set_property PACKAGE_PIN P15 [get_ports {Ce}] 
-	set_property IOSTANDARD LVCMOS33 [get_ports {Ce}]
-
-set_property PACKAGE_PIN T11 [get_ports {Cf}] 
-	set_property IOSTANDARD LVCMOS33 [get_ports {Cf}]
-
-set_property PACKAGE_PIN L18 [get_ports {Cg}] 
-	set_property IOSTANDARD LVCMOS33 [get_ports {Cg}]
-
-set_property PACKAGE_PIN H15 [get_ports Dp] 
-	set_property IOSTANDARD LVCMOS33 [get_ports Dp]
-
-set_property PACKAGE_PIN J17 [get_ports {An0}] 
-	set_property IOSTANDARD LVCMOS33 [get_ports {An0}]
-
-set_property PACKAGE_PIN J18 [get_ports {An1}] 
-	set_property IOSTANDARD LVCMOS33 [get_ports {An1}]
-
-set_property PACKAGE_PIN T9 [get_ports {An2}] 
-	set_property IOSTANDARD LVCMOS33 [get_ports {An2}]
-
-set_property PACKAGE_PIN J14 [get_ports {An3}] 
-	set_property IOSTANDARD LVCMOS33 [get_ports {An3}]
-
-set_property PACKAGE_PIN P14 [get_ports {An4}] 
-	set_property IOSTANDARD LVCMOS33 [get_ports {An4}]
-
-set_property PACKAGE_PIN T14 [get_ports {An5}] 
-	set_property IOSTANDARD LVCMOS33 [get_ports {An5}]
-
-set_property PACKAGE_PIN K2 [get_ports {An6}] 
-	set_property IOSTANDARD LVCMOS33 [get_ports {An6}]
-
-set_property PACKAGE_PIN U13 [get_ports {An7}] 
-	set_property IOSTANDARD LVCMOS33 [get_ports {An7}]
-
-set_property PACKAGE_PIN N17 [get_ports BtnC] 
-	set_property IOSTANDARD LVCMOS33 [get_ports BtnC]
-
-set_property PACKAGE_PIN M18 [get_ports BtnU] 
-	set_property IOSTANDARD LVCMOS33 [get_ports BtnU]
+set_property PACKAGE_PIN N17 [get_ports {reset_btn}]    ;# BtnC
+set_property IOSTANDARD LVCMOS33 [get_ports {reset_btn}]
 
 set_property PACKAGE_PIN A3 [get_ports {vgaR[0]}]				
 	set_property IOSTANDARD LVCMOS33 [get_ports {vgaR[0]}]

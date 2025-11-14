@@ -12,6 +12,7 @@ module top_vga_mobility (
     output wire [3:0] vga_b
 );
 
+
     // ---------------------
     // Clock divider: 100 MHz → 25 MHz
     // ---------------------
