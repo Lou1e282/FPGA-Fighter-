@@ -17,6 +17,14 @@ set_property IOSTANDARD LVCMOS33 [get_ports {btn_jump}]
 set_property PACKAGE_PIN N17 [get_ports {reset_btn}]    ;# BtnC
 set_property IOSTANDARD LVCMOS33 [get_ports {reset_btn}]
 
+## Switches
+set_property PACKAGE_PIN A8 [get_ports {sw0}]
+set_property IOSTANDARD LVCMOS33 [get_ports {sw0}]
+
+set_property PACKAGE_PIN C11 [get_ports {sw1}]
+set_property IOSTANDARD LVCMOS33 [get_ports {sw1}]
+
+
 set_property PACKAGE_PIN A3 [get_ports {vgaR[0]}]				
 	set_property IOSTANDARD LVCMOS33 [get_ports {vgaR[0]}]
 
@@ -70,4 +78,4 @@ set_property PACKAGE_PIN H14 [get_ports MemOE]
 
 set_property PACKAGE_PIN R11 [get_ports MemWR]					
 	set_property IOSTANDARD LVCMOS33 [get_ports MemWR]
-
+	

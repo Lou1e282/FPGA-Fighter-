@@ -4,12 +4,12 @@
 
 module player_move #(
     parameter POS_WIDTH    = 10,
-    parameter GROUND_Y     = 10,
+    parameter GROUND_Y     = 430,
     parameter GROUND_X     = 10,
     parameter MIN_X        = 40,
     parameter MAX_X        = 600,
-    parameter SPEED        = 4'd2,
-    parameter integer JUMP_FRAMES = 16
+    parameter SPEED        = 4'd4,           // acceleration
+    parameter integer JUMP_FRAMES = 40
 )(
     input  wire clk,
     input  wire reset,
@@ -101,22 +101,50 @@ module player_move #(
 
                 // vertical arc (VGA Y downward)
                case (jcnt)
-                    0:  pos_y <= GROUND_Y;        
-                    1:  pos_y <= GROUND_Y - 1;
-                    2:  pos_y <= GROUND_Y - 2;
-                    3:  pos_y <= GROUND_Y - 3;
-                    4:  pos_y <= GROUND_Y - 4;
-                    5:  pos_y <= GROUND_Y - 5;
-                    6:  pos_y <= GROUND_Y - 6;
-                    7:  pos_y <= GROUND_Y - 7;  
-                    8:  pos_y <= GROUND_Y - 6;
-                    9:  pos_y <= GROUND_Y - 5;
-                    10: pos_y <= GROUND_Y - 4;
-                    11: pos_y <= GROUND_Y - 3;
-                    12: pos_y <= GROUND_Y - 2;
-                    13: pos_y <= GROUND_Y - 1;
-                    14: pos_y <= GROUND_Y;       
-                    15: pos_y <= GROUND_Y;        
+                    case (jcnt)
+                        0: pos_y <= GROUND_Y - 0;
+                        1: pos_y <= GROUND_Y - 1;
+                        2: pos_y <= GROUND_Y - 2;
+                        3: pos_y <= GROUND_Y - 3;
+                        4: pos_y <= GROUND_Y - 4;
+                        5: pos_y <= GROUND_Y - 5;
+                        6: pos_y <= GROUND_Y - 6;
+                        7: pos_y <= GROUND_Y - 7;
+                        8: pos_y <= GROUND_Y - 8;
+                        9: pos_y <= GROUND_Y - 9;
+                        10: pos_y <= GROUND_Y - 10;
+                        11: pos_y <= GROUND_Y - 11;
+                        12: pos_y <= GROUND_Y - 12;
+                        13: pos_y <= GROUND_Y - 13;
+                        14: pos_y <= GROUND_Y - 14;
+                        15: pos_y <= GROUND_Y - 15;
+                        16: pos_y <= GROUND_Y - 16;
+                        17: pos_y <= GROUND_Y - 17;
+                        18: pos_y <= GROUND_Y - 18;
+                        19: pos_y <= GROUND_Y - 19;
+                        20: pos_y <= GROUND_Y - 19;
+                        21: pos_y <= GROUND_Y - 18;
+                        22: pos_y <= GROUND_Y - 17;
+                        23: pos_y <= GROUND_Y - 16;
+                        24: pos_y <= GROUND_Y - 15;
+                        25: pos_y <= GROUND_Y - 14;
+                        26: pos_y <= GROUND_Y - 13;
+                        27: pos_y <= GROUND_Y - 12;
+                        28: pos_y <= GROUND_Y - 11;
+                        29: pos_y <= GROUND_Y - 10;
+                        30: pos_y <= GROUND_Y - 9;
+                        31: pos_y <= GROUND_Y - 8;
+                        32: pos_y <= GROUND_Y - 7;
+                        33: pos_y <= GROUND_Y - 6;
+                        34: pos_y <= GROUND_Y - 5;
+                        35: pos_y <= GROUND_Y - 4;
+                        36: pos_y <= GROUND_Y - 3;
+                        37: pos_y <= GROUND_Y - 2;
+                        38: pos_y <= GROUND_Y - 1;  
+                        39: pos_y <= GROUND_Y - 0;  // Landing
+                    endcase
+
+                         
                 endcase
 
                 // landing

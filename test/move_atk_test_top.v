@@ -4,6 +4,7 @@ module top_vga_mobility (
     input  wire btn_left,
     input  wire btn_right,
     input  wire btn_jump,
+    input  wire sw0, sw1,   // attack 1 2
 
     output wire hsync,
     output wire vsync,
@@ -47,7 +48,7 @@ module top_vga_mobility (
     wire move_active;
     wire jump_active;
 
-    player_move p1 (
+    player_move pm1 (
         .clk(pixclk),
         .reset(reset_btn),
         .SCEN(frame_tick),
@@ -66,18 +67,58 @@ module top_vga_mobility (
     );
 
     // ---------------------
+    // Player attack
+    // ---------------------
+    wire attack1 = sw0;
+    wire attack2 = sw1; 
+
+    player_attack patk1(
+        .clk(pixclk),
+        .reset(reset_btn),
+        .SCEN(frame_tick),
+        .attack_enable(1'b1),
+        .attack1(attack1),  
+        .attack2(attack2),
+
+        .attack_active(attack_active),
+        .attack_type(attack_type),
+        .attack_busy(attack_busy) 
+    ); 
+
+    // ---------------------
     // Draw simple rectangle + ground line
     // ---------------------
-    localparam BOX_W = 32;
-    localparam BOX_H = 48;
+    localparam BOX_W = 60;
+    localparam BOX_H = 60;
 
     // === PLAYER BOX ===
     wire player_on =
         (hcount >= pos_x && hcount < pos_x + BOX_W) &&
         (vcount >= pos_y && vcount < pos_y + BOX_H);
 
+    /////////////////atk test//////////////
+    // === PLAYER ATK BOX ===
+    localparam ATK1_W = 30;
+    localparam ATK1_H = 60;
+    localparam ATK2_W = 60;
+    localparam ATK2_H = 60;
+
+    wire attack1_on =
+    attack_active &&
+    (attack_type == 2'd1) &&
+    (hcount >= pos_x + BOX_W && hcount < pos_x + BOX_W + ATK1_W) &&
+    (vcount >= pos_y && vcount < pos_y + ATK1_H);
+
+    wire attack2_on =
+    attack_active &&
+    (attack_type == 2'd2) &&
+    (hcount >= pos_x + BOX_W && hcount < pos_x + BOX_W + ATK2_W) &&
+    (vcount >= pos_y && vcount < pos_y + ATK2_H);
+
+    /////////////////////////////////////
+
     // === GROUND LINE (1 pixel thick) ===
-    localparam GROUND_Y = 430;
+    localparam PLAYER_GROUND_Y = 360;
 
     wire ground_on =
         (vcount == GROUND_Y);
@@ -86,10 +127,13 @@ module top_vga_mobility (
     assign vga_r =
         (visible && (player_on || ground_on)) ? 4'hF : 4'h0;
 
-    assign vga_g =
-        (visible && player_on) ? 4'h2 :
-        (visible && ground_on) ? 4'hF : 4'h0;
+   assign vga_g =
+    (visible && (attack1_on || attack2_on)) ? 4'hF :
+    (visible && player_on)                  ? 4'h2 :
+    (visible && ground_on)                  ? 4'hF :
+    4'h0;
 
     assign vga_b = 4'h0;
+
 
 endmodule
