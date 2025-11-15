@@ -30,7 +30,7 @@ module top_vga_mobility (
     wire       visible;
 
     vga_640x480 vga_core (
-        .clk(pixclk)
+        .clk(pixclk), 
         .hsync(hsync),
         .vsync(vsync),
         .hcount(hcount),
@@ -82,7 +82,7 @@ module top_vga_mobility (
 
         .attack_active(attack_active),
         .attack_type(attack_type),
-        .attack_busy(attack_busy) 
+        .attack_busy(attack_busy)
     ); 
 
     // ---------------------

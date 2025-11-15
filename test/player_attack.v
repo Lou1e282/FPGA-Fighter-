@@ -17,21 +17,23 @@ module player_attack #(
     input  wire SCEN,
     input  wire attack_enable,
 
-    input  wire attack1,   // from sw0
-    input  wire attack2,   // from sw1
+    input  wire attack1,   // sw0 (switch)
+    input  wire attack2,   // sw1 (switch)
 
     output reg  attack_active,
-    output reg  [1:0] attack_type,   // 1 = ATK1, 2 = ATK2
+    output reg  [1:0] attack_type,
     output reg  [5:0] attack_frame,
     output reg        attack_busy
 );
 
     reg [5:0] acnt;
 
-    // --- edge detect registers ---
-    reg attack1_d, attack2_d;
-    wire attack1_rise = attack1 & ~attack1_d;
-    wire attack2_rise = attack2 & ~attack2_d;
+    // -----------------------------------------------------
+    // SWITCH-BASED (LEVEL-SENSITIVE) attack requests
+    // -----------------------------------------------------
+    // These are NOT edge-triggered anymore.
+    // Whenever the switch is ON, request remains ON.
+    reg attack1_req, attack2_req;
 
     always @(posedge clk or posedge reset) begin
         if (reset) begin
@@ -40,73 +42,77 @@ module player_attack #(
             attack_type   <= 2'd0;
             attack_frame  <= 6'd0;
             acnt          <= 6'd0;
-            attack1_d     <= 1'b0;
-            attack2_d     <= 1'b0;
+
+            attack1_req <= 1'b0;
+            attack2_req <= 1'b0;
         end else begin
-            // update edge-detect flops every clock
-            attack1_d <= attack1;
-            attack2_d <= attack2;
 
+            // --------------------------------------------------
+            // LEVEL-SENSITIVE REQUEST (switch ON → request ON)
+            // --------------------------------------------------
+            if (attack1) attack1_req <= 1'b1;
+            if (attack2) attack2_req <= 1'b1;
+
+            // Clear after consumption (below)
+
+            // =======================
+            // MAIN FSM – 1 per frame
+            // =======================
             if (SCEN && attack_enable) begin
-                attack_active <= 1'b0;   // default off each frame
+                attack_active <= 1'b0;
 
-                // =========================================
-                // NOT IN ATTACK → start only on rising edge
-                // =========================================
+                // ------------------------------------------------------
+                // IDLE → begin next attack as long as switch is still ON
+                // ------------------------------------------------------
                 if (!attack_busy) begin
                     acnt         <= 6'd0;
                     attack_frame <= 6'd0;
 
-                    if (attack1_rise) begin
+                    if (attack1_req) begin
                         attack_busy <= 1'b1;
                         attack_type <= 2'd1;
+                        attack1_req <= 1'b0;     // consume one iteration
                     end
-                    else if (attack2_rise) begin
+                    else if (attack2_req) begin
                         attack_busy <= 1'b1;
                         attack_type <= 2'd2;
+                        attack2_req <= 1'b0;
                     end
                 end
 
-                // =========================================
-                // IN ATTACK → advance frames and hitbox
-                // =========================================
+                // ---------------------------
+                // IN ATTACK
+                // ---------------------------
                 else begin
                     acnt         <= acnt + 1'b1;
                     attack_frame <= acnt;
 
-                    // ---------- Attack 1 ----------
                     if (attack_type == 2'd1) begin
                         if (acnt >= ATK1_ACTIVE_START &&
                             acnt <= ATK1_ACTIVE_END)
                             attack_active <= 1'b1;
 
                         if (acnt == ATK1_TOTAL_FRAMES - 1) begin
-                            attack_busy   <= 1'b0;
-                            attack_type   <= 2'd0;
-                            attack_frame  <= 6'd0;
+                            attack_busy <= 1'b0;
+                            attack_type <= 2'd0;
                         end
                     end
 
-                    // ---------- Attack 2 ----------
                     else if (attack_type == 2'd2) begin
                         if (acnt >= ATK2_ACTIVE_START &&
                             acnt <= ATK2_ACTIVE_END)
                             attack_active <= 1'b1;
 
                         if (acnt == ATK2_TOTAL_FRAMES - 1) begin
-                            attack_busy   <= 1'b0;
-                            attack_type   <= 2'd0;
-                            attack_frame  <= 6'd0;
+                            attack_busy <= 1'b0;
+                            attack_type <= 2'd0;
                         end
                     end
                 end
             end
         end
     end
-
 endmodule
-
-
 
 
 
