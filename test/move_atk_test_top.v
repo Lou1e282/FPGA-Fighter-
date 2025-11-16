@@ -4,7 +4,7 @@ module top_vga_mobility (
     input  wire btn_left,
     input  wire btn_right,
     input  wire btn_jump,
-    input  wire btn_attack, 
+    input  wire btn_atk, 
 
     output wire hsync,
     output wire vsync,
@@ -75,7 +75,7 @@ module top_vga_mobility (
         .reset(reset_btn),
         .SCEN(frame_tick),
         .attack_enable(1'b1),
-        .attack1(attack1),  
+        .attack1(btn_atk),  
         // .attack2(attack2),
 
         .attack_active(attack_active),
@@ -118,7 +118,7 @@ module top_vga_mobility (
     localparam PLAYER_GROUND_Y = 360;
 
     wire ground_on =
-        (vcount == GROUND_Y);
+        (vcount == PLAYER_GROUND_Y);
 
     // === VGA OUTPUT ===
     assign vga_r =

@@ -101,46 +101,47 @@ module player_move #(
 
                 // vertical arc (VGA Y downward)
                case (jcnt)
-                     0: pos_y <= GROUND_Y - 0;
-                        1: pos_y <= GROUND_Y - 1;
-                        2: pos_y <= GROUND_Y - 2;
-                        3: pos_y <= GROUND_Y - 3;
-                        4: pos_y <= GROUND_Y - 4;
-                        5: pos_y <= GROUND_Y - 5;
-                        6: pos_y <= GROUND_Y - 6;
-                        7: pos_y <= GROUND_Y - 7;
-                        8: pos_y <= GROUND_Y - 8;
-                        9: pos_y <= GROUND_Y - 9;
-                        10: pos_y <= GROUND_Y - 10;
-                        11: pos_y <= GROUND_Y - 11;
-                        12: pos_y <= GROUND_Y - 12;
-                        13: pos_y <= GROUND_Y - 13;
-                        14: pos_y <= GROUND_Y - 14;
-                        15: pos_y <= GROUND_Y - 15;
-                        16: pos_y <= GROUND_Y - 16;
-                        17: pos_y <= GROUND_Y - 17;
-                        18: pos_y <= GROUND_Y - 18;
-                        19: pos_y <= GROUND_Y - 19;
-                        20: pos_y <= GROUND_Y - 19;
-                        21: pos_y <= GROUND_Y - 18;
-                        22: pos_y <= GROUND_Y - 17;
-                        23: pos_y <= GROUND_Y - 16;
-                        24: pos_y <= GROUND_Y - 15;
-                        25: pos_y <= GROUND_Y - 14;
-                        26: pos_y <= GROUND_Y - 13;
-                        27: pos_y <= GROUND_Y - 12;
-                        28: pos_y <= GROUND_Y - 11;
-                        29: pos_y <= GROUND_Y - 10;
-                        30: pos_y <= GROUND_Y - 9;
-                        31: pos_y <= GROUND_Y - 8;
-                        32: pos_y <= GROUND_Y - 7;
-                        33: pos_y <= GROUND_Y - 6;
-                        34: pos_y <= GROUND_Y - 5;
-                        35: pos_y <= GROUND_Y - 4;
-                        36: pos_y <= GROUND_Y - 3;
-                        37: pos_y <= GROUND_Y - 2;
-                        38: pos_y <= GROUND_Y - 1;  
-                        39: pos_y <= GROUND_Y - 0;  // Landing    
+                        0:  pos_y <= GROUND_Y - 0;
+                        1:  pos_y <= GROUND_Y - 4;
+                        2:  pos_y <= GROUND_Y - 6;
+                        3:  pos_y <= GROUND_Y - 10;
+                        4:  pos_y <= GROUND_Y - 14;
+                        5:  pos_y <= GROUND_Y - 16;
+                        6:  pos_y <= GROUND_Y - 20;
+                        7:  pos_y <= GROUND_Y - 22;
+                        8:  pos_y <= GROUND_Y - 26;
+                        9:  pos_y <= GROUND_Y - 28;
+                        10: pos_y <= GROUND_Y - 30;
+                        11: pos_y <= GROUND_Y - 32;
+                        12: pos_y <= GROUND_Y - 34;
+                        13: pos_y <= GROUND_Y - 34;
+                        14: pos_y <= GROUND_Y - 36;
+                        15: pos_y <= GROUND_Y - 36;
+                        16: pos_y <= GROUND_Y - 38;
+                        17: pos_y <= GROUND_Y - 38;
+                        18: pos_y <= GROUND_Y - 38;
+                        19: pos_y <= GROUND_Y - 40;
+                        20: pos_y <= GROUND_Y - 40;
+                        21: pos_y <= GROUND_Y - 38;
+                        22: pos_y <= GROUND_Y - 38;
+                        23: pos_y <= GROUND_Y - 38;
+                        24: pos_y <= GROUND_Y - 36;
+                        25: pos_y <= GROUND_Y - 36;
+                        26: pos_y <= GROUND_Y - 34;
+                        27: pos_y <= GROUND_Y - 34;
+                        28: pos_y <= GROUND_Y - 32;
+                        29: pos_y <= GROUND_Y - 30;
+                        30: pos_y <= GROUND_Y - 28;
+                        31: pos_y <= GROUND_Y - 26;
+                        32: pos_y <= GROUND_Y - 22;
+                        33: pos_y <= GROUND_Y - 20;
+                        34: pos_y <= GROUND_Y - 16;
+                        35: pos_y <= GROUND_Y - 14;
+                        36: pos_y <= GROUND_Y - 10;
+                        37: pos_y <= GROUND_Y - 6;
+                        38: pos_y <= GROUND_Y - 4;
+                        39: pos_y <= GROUND_Y - 0;
+
                 endcase
 
                 // landing

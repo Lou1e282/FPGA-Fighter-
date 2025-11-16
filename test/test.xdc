@@ -15,6 +15,7 @@ create_clock -add -name sys_clk -period 10.00 -waveform {0 5} [get_ports {clk}]
 ## BtnR = M17
 ## BtnU = M18
 ## BtnC = N17
+## Btn
 ## ==========================
 
 set_property PACKAGE_PIN P17 [get_ports {btn_left}]
@@ -29,7 +30,7 @@ set_property IOSTANDARD LVCMOS33 [get_ports {btn_jump}]
 set_property PACKAGE_PIN N17 [get_ports {reset_btn}]
 set_property IOSTANDARD LVCMOS33 [get_ports {reset_btn}]
 
-set_property PACKAGE_PIN W17 [get_ports {btn_atk}]
+set_property PACKAGE_PIN P18 [get_ports {btn_atk}]
 set_property IOSTANDARD LVCMOS33 [get_ports {btn_atk}]
 
 ## -- switches
