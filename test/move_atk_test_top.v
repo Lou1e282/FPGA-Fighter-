@@ -4,7 +4,7 @@ module top_vga_mobility (
     input  wire btn_left,
     input  wire btn_right,
     input  wire btn_jump,
-    input  wire sw0, sw1,   // attack 1 2
+    input  wire btn_attack, 
 
     output wire hsync,
     output wire vsync,
@@ -69,8 +69,6 @@ module top_vga_mobility (
     // ---------------------
     // Player attack
     // ---------------------
-    wire attack1 = sw0;
-    wire attack2 = sw1; 
 
     player_attack patk1(
         .clk(pixclk),
@@ -78,10 +76,9 @@ module top_vga_mobility (
         .SCEN(frame_tick),
         .attack_enable(1'b1),
         .attack1(attack1),  
-        .attack2(attack2),
+        // .attack2(attack2),
 
         .attack_active(attack_active),
-        .attack_type(attack_type),
         .attack_busy(attack_busy)
     ); 
 
@@ -100,8 +97,8 @@ module top_vga_mobility (
     // === PLAYER ATK BOX ===
     localparam ATK1_W = 30;
     localparam ATK1_H = 60;
-    localparam ATK2_W = 60;
-    localparam ATK2_H = 60;
+    // localparam ATK2_W = 60;
+    // localparam ATK2_H = 60;
 
     wire attack1_on =
     attack_active &&
@@ -109,11 +106,11 @@ module top_vga_mobility (
     (hcount >= pos_x + BOX_W && hcount < pos_x + BOX_W + ATK1_W) &&
     (vcount >= pos_y && vcount < pos_y + ATK1_H);
 
-    wire attack2_on =
-    attack_active &&
-    (attack_type == 2'd2) &&
-    (hcount >= pos_x + BOX_W && hcount < pos_x + BOX_W + ATK2_W) &&
-    (vcount >= pos_y && vcount < pos_y + ATK2_H);
+    // wire attack2_on =
+    // attack_active &&
+    // (attack_type == 2'd2) &&
+    // (hcount >= pos_x + BOX_W && hcount < pos_x + BOX_W + ATK2_W) &&
+    // (vcount >= pos_y && vcount < pos_y + ATK2_H);
 
     /////////////////////////////////////
 
@@ -128,7 +125,7 @@ module top_vga_mobility (
         (visible && (player_on || ground_on)) ? 4'hF : 4'h0;
 
    assign vga_g =
-    (visible && (attack1_on || attack2_on)) ? 4'hF :
+    (visible && (attack1_on)) ? 4'hF :
     (visible && player_on)                  ? 4'h2 :
     (visible && ground_on)                  ? 4'hF :
     4'h0;
