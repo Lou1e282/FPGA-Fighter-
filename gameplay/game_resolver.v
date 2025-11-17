@@ -53,4 +53,3 @@ module game_resolver #(
             hit_p2_to_p1 = 1;
     end
 endmodule
-`

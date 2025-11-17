@@ -14,11 +14,12 @@ module player_state_anim (
     // From move module
     input  wire move_active,
     input  wire jump_active,
+    input  wire [5:0] move_frame,        // move test
     input  wire [5:0] jump_frame,
 
     // from lose ? 
 
-    // Final animation out
+    // Final animation 
     output reg [3:0] anim_state,
     output reg [5:0] anim_frame
 );
