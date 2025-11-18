@@ -1,53 +1,72 @@
-module player_state (
+module player_state_anim (
+    input  wire SCEN,
     input  wire clk,
     input  wire reset,
-    input  wire SCEN,
 
-    // input interface
-    input  wire move_left,
-    input  wire move_right,
-    input  wire jump,
-    input  wire attack1,
-    input  wire attack2,
+    // From resolver
+    input  wire hitstun_active,
 
-    // from game_resolver
-    input  wire hitstun_active,     // overrides everything
+    // From attack module
+    input  wire attack_active,
+    input  wire [1:0] attack_type,
+    input  wire [5:0] attack_frame,
 
-    // from attack / move modules
-    input  wire attack_busy,
+    // From move module
+    input  wire move_active,
     input  wire jump_active,
+    input  wire [5:0] jump_frame,
 
-    // enables
-    output reg move_enable,
-    output reg attack_enable
+    // Final animation out
+    output reg [3:0] anim_state,
+    output reg [5:0] anim_frame
 );
+
+    // Encode states
+    localparam S_IDLE   = 4'd0;
+    localparam S_WALK   = 4'd1;
+    localparam S_JUMP   = 4'd2;
+    localparam S_ATK1   = 4'd3
+    localparam S_ATK2   = 4'd4;
+    localparam S_HIT    = 4'd5;
 
     always @(posedge clk or posedge reset) begin
         if (reset) begin
-            move_enable   <= 1'b1;
-            attack_enable <= 1'b0;
+            anim_state <= S_IDLE;
+            anim_frame <= 6'd0;
         end
 
         else if (SCEN) begin
-
-            // ---------------- HITSTUN OVERRIDES ALL ----------------
+            // ---------- HITSTUN TOP PRIORITY ----------
             if (hitstun_active) begin
-                move_enable   <= 1'b0;
-                attack_enable <= 1'b0;
+                anim_state <= S_HIT;
+                anim_frame <= 0;     // can replace with hitstun timer
             end
 
-            // ---------------- ATTACK PRIORITY ----------------------
-            else if (!attack_busy && (attack1 || attack2)) begin
-                move_enable   <= 1'b0;
-                attack_enable <= 1'b1;
+            // ---------- ATTACKS ----------
+            else if (attack_active) begin
+                anim_state <= (attack_type==2'd1) ? S_ATK1 : S_ATK2;
+                anim_frame <= attack_frame;
             end
 
-            // ---------------- JUMP & MOVE (NORMAL) ------------------
+            // ---------- JUMP ----------
+            else if (jump_active) begin
+                anim_state <= S_JUMP;
+                anim_frame <= jump_frame;
+            end
+
+            // ---------- WALK ----------
+            else if (move_active) begin
+                anim_state <= S_WALK;
+                anim_frame <= 0; // or walk cycle if you add it
+            end
+
+            // ---------- IDLE ----------
             else begin
-                attack_enable <= 1'b0;
-                move_enable   <= 1'b1;
+                anim_state <= S_IDLE;
+                anim_frame <= 0;
             end
         end
+
     end
 
 endmodule

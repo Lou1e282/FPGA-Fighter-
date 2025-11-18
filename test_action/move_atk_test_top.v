@@ -13,7 +13,7 @@ module top_vga_mobility (
     output wire [3:0] vga_b
 );
 
-
+a
     // ---------------------
     // Clock divider: 100 MHz → 25 MHz
     // ---------------------
@@ -21,7 +21,7 @@ module top_vga_mobility (
     always @(posedge clk) div <= div + 1;
     wire pixclk = div[1];  // 100/4 = 25 MHz
 
-    // ---------------------
+    // --------------------- 
     // VGA timing generator
     // ---------------------
     wire [9:0] hcount;
