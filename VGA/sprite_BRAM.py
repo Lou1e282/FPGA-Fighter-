@@ -1,37 +1,48 @@
-import imageio
+#!/usr/bin/env python3
 import math
+from PIL import Image
 
-# returns 12-bit RGB packed as integer (0..4095)
-def get_color_12(im, y, x):
-    r = im[y][x][0] >> 4    # upper 4 bits
-    g = im[y][x][1] >> 4
-    b = im[y][x][2] >> 4
-    return (r << 8) | (g << 4) | b   # r3..r0 g3..g0 b3..b0
+SPR_W = 126
+SPR_H = 126
 
+# ------------------------------------------------------------
+# Convert RGB → 12-bit packed RGB
+# ------------------------------------------------------------
+def rgb12(r, g, b):
+    return ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4)
 
-def generate_bram_rom(name):
-    im = imageio.imread(name)
-    height, width, _ = im.shape
-    depth = width * height
+# ------------------------------------------------------------
+# Generate .mem + .v ROM from an image
+# ------------------------------------------------------------
+def generate_bram_rom(filename):
+    # Load image, convert to RGB, force exact sizep
+    img = Image.open(filename).convert("RGB")
+    img = img.resize((SPR_W, SPR_H), Image.NEAREST)
 
-    print(f"Image: w={width}, h={height}, total={depth} pixels")
+    width, height = img.size
+    assert width == SPR_W and height == SPR_H
 
-    # ------------------------------------------------------------------
-    # 1. Write .mem file
-    # ------------------------------------------------------------------
-    mem_filename = name.split('.')[0] + "_12bit.mem"
+    pixels = img.load()
+    depth = SPR_W * SPR_H
+
+    print(f"[OK] Using size {width}×{height}, total {depth} pixels")
+
+    # --------------------------------------------------------
+    # Write .mem file (row-major y,x order)
+    # --------------------------------------------------------
+    mem_filename = filename.rsplit(".", 1)[0] + "_12bit.mem"
     with open(mem_filename, "w") as f:
-        for y in range(height):
-            for x in range(width):
-                color = get_color_12(im, y, x)
-                f.write(f"{color:03X}\n")   # 3-digit hex (12 bits)
+        for y in range(SPR_H):
+            for x in range(SPR_W):
+                r, g, b = pixels[x, y]
+                f.write(f"{rgb12(r, g, b):03X}\n")
 
-    print(f"Wrote {mem_filename}")
+    print(f"[OK] Wrote {mem_filename}")
 
-    # ------------------------------------------------------------------
-    # 2. Write Verilog ROM module
-    # ------------------------------------------------------------------
-    module_name = name.split('.')[0] + "_rom"
+    # --------------------------------------------------------
+    # Verilog ROM module
+    # --------------------------------------------------------
+    module_name = filename.rsplit(".", 1)[0] + "_rom"
     v_filename = module_name + ".v"
 
     addr_bits = math.ceil(math.log2(depth))
@@ -56,8 +67,12 @@ def generate_bram_rom(name):
 endmodule
 """)
 
-    print(f"Wrote {v_filename}")
+    print(f"[OK] Wrote {v_filename}")
+    print("[DONE]")
 
 
-# Example
-generate_bram_rom("flappyBird.jpg")
+# ------------------------------------------------------------
+# Example usage
+# ------------------------------------------------------------
+if __name__ == "__main__":
+    generate_bram_rom("sprite.png")
