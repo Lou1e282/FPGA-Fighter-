@@ -1,4 +1,4 @@
-module top_pvp
+module top_pvp (
     input  wire clk,       // 100 MHz board clock
     input  wire reset_btn, // active high
 
@@ -14,16 +14,24 @@ module top_pvp
     input  wire p2_btn_jump,
     input  wire p2_btn_atk,
 
+    // VGA output
     output wire hsync,
     output wire vsync,
     output wire [3:0] vga_r,
     output wire [3:0] vga_g,
     output wire [3:0] vga_b, 
 
+    // P1 LED test output
     output wire LED0,    // move_active
     output wire LED1,    // jump_active
-    output wire LED2,    // attack_busy
+    output wire LED2,    // attack_damage
     output wire LED3     // attack_active    // testing purpose
+
+    // P2 LED test output
+    output wire LED4,    // move_active
+    output wire LED5,    // jump_active
+    output wire LED6,    // attack_damage
+    output wire LED7     // attack_active    // testing purpose
 );
 
     // ---------------------
@@ -105,23 +113,38 @@ module top_pvp
     // Player attack
     // ---------------------
     wire        attack_active;
-    wire        attack_busy;
+    wire        attack_damage;
     // wire [1:0]  attack_type;
     wire [5:0]  attack_frame;   // 0..17 for 18-frame attack
 
-    player_attack patk1 (
+    player_attack p1atk1 (
         .clk(pixclk),
         .reset(reset_btn),
         .SCEN(frame_tick),
         .attack_enable(1'b1),
-        .attack1(btn_atk),
+        .attack1(p1_btn_atk),
         // .attack2(attack2),
 
         .attack_active(attack_active),
-        .attack_busy(attack_busy),
+        .attack_damage(attack_damage),
         // .attack_type(attack_type),    // add these outputs in player_attack
         .attack_frame(attack_frame)
     );
+
+     player_attack p2atk1 (
+        .clk(pixclk),
+        .reset(reset_btn),
+        .SCEN(frame_tick),
+        .attack_enable(1'b1),
+        .attack1(p2_btn_atk),
+        // .attack2(attack2),
+
+        .attack_active(attack_active),
+        .attack_damage(attack_damage),
+        // .attack_type(attack_type),    // add these outputs in player_attack
+        .attack_frame(attack_frame)
+    );
+
 
     // ---------------------
     // Animation state machine
@@ -193,7 +216,12 @@ module top_pvp
     // LED testing purpose
     assign LED0 = move_active;     // Should flicker when moving
     assign LED1 = jump_active;     // Should light during jump
-    assign LED2 = attack_busy;     // ON for full 18-frame attack
+    assign LED2 = attack_damage;     // ON for full 18-frame attack
     assign LED3 = attack_active;   // ON only during hitbox window (frames 4–10)
+
+    assign LED4 = move_active;     // Should flicker when moving
+    assign LED5 = jump_active;     // Should light during jump
+    assign LED6 = attack_damage;     // ON for full 18-frame attack
+    assign LED7 = attack_active;   // ON only during hitbox window (frames 4–10)
 
 endmodule
