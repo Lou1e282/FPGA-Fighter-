@@ -148,7 +148,7 @@ module top_vga_sprite (
     // Always appears directly in front of player
     // ------------------------------------------------------------
     localparam HITBOX_W = 40;
-    localparam HITBOX_H = 40;
+    localparam HITBOX_H = 80;
 
     // Position hitbox directly in front of player
     wire [9:0] atk_x0 = facing ?
@@ -157,7 +157,7 @@ module top_vga_sprite (
     wire [9:0] atk_x1 = atk_x0 + HITBOX_W;
 
     // Vertically centered on character center
-    wire [9:0] atk_y0 = pos_y + 75 - (HITBOX_H >> 1);
+    wire [9:0] atk_y0 = pos_y + 35 - (HITBOX_H >> 1);
     wire [9:0] atk_y1 = atk_y0 + HITBOX_H;
 
     // Active only during attack_damage window

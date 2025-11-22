@@ -9,7 +9,8 @@ module player_move #(
     parameter MIN_X        = 40,
     parameter MAX_X        = 600,
     parameter SPEED        = 4'd3,
-    parameter integer JUMP_FRAMES = 40
+    parameter integer JUMP_FRAMES = 40,
+    parameter PLAYER_ID    = 1 
 )(
     input  wire clk,
     input  wire reset,
@@ -41,11 +42,13 @@ module player_move #(
         if (reset) begin
             pos_x        <= GROUND_X;
             pos_y        <= GROUND_Y;
-            facing_right <= 1'b1;
             move_active  <= 1'b0;
             jump_active  <= 1'b0;
             x_lock       <= 0;
             jcnt         <= 0;
+
+            facing_right = PLAYER_ID ? 1'b1 : 1'b0; 
+
         end
         else if (SCEN && move_enable) begin
             move_active <= 1'b0;

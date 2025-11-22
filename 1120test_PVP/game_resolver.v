@@ -36,14 +36,14 @@ module game_resolver #(
     input  wire [POS_WIDTH-1:0] p1_y,
     input  wire                 p1_face_right,
 
-    input  wire                 p1_attack_active,
+    input  wire                 p1_attack_damage,
 
     // --- P2 ---
     input  wire [POS_WIDTH-1:0] p2_x,
     input  wire [POS_WIDTH-1:0] p2_y,
     input  wire                 p2_face_right,
 
-    input  wire                 p2_attack_active,
+    input  wire                 p2_attack_damage,
 
     // --- outputs ---
     output reg                  p1_hit_event,

@@ -18,20 +18,37 @@ create_clock -add -name sys_clk -period 10.00 -waveform {0 5} [get_ports {clk}]
 ## Btn
 ## ==========================
 
-set_property PACKAGE_PIN P17 [get_ports {btn_left}]
-set_property IOSTANDARD LVCMOS33 [get_ports {btn_left}]
+# P1 INPUTS
+set_property PACKAGE_PIN P17 [get_ports {p1_btn_left}]
+set_property IOSTANDARD LVCMOS33 [get_ports {p1_btn_left}]
 
-set_property PACKAGE_PIN M17 [get_ports {btn_right}]
-set_property IOSTANDARD LVCMOS33 [get_ports {btn_right}]
+set_property PACKAGE_PIN M17 [get_ports {p1_btn_right}]
+set_property IOSTANDARD LVCMOS33 [get_ports {p1_btn_right}]
 
-set_property PACKAGE_PIN M18 [get_ports {btn_jump}]
-set_property IOSTANDARD LVCMOS33 [get_ports {btn_jump}]
+set_property PACKAGE_PIN M18 [get_ports {p1_btn_jump}]
+set_property IOSTANDARD LVCMOS33 [get_ports {p1_btn_jump}]
 
-set_property PACKAGE_PIN N17 [get_ports {reset_btn}]
-set_property IOSTANDARD LVCMOS33 [get_ports {reset_btn}]
+set_property PACKAGE_PIN N17 [get_ports {p1_reset_btn}]
+set_property IOSTANDARD LVCMOS33 [get_ports {p1_reset_btn}]
 
-set_property PACKAGE_PIN P18 [get_ports {btn_atk}]
-set_property IOSTANDARD LVCMOS33 [get_ports {btn_atk}]
+set_property PACKAGE_PIN P18 [get_ports {p1_btn_atk}]
+set_property IOSTANDARD LVCMOS33 [get_ports {p1_btn_atk}]
+
+# P2 buttons (assigned to PMOD JA)
+set_property PACKAGE_PIN J1 [get_ports {p2_btn_left}]
+set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_left}]
+
+set_property PACKAGE_PIN L2 [get_ports {p2_btn_right}]
+set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_right}]
+
+set_property PACKAGE_PIN J2 [get_ports {p2_btn_jump}]
+set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_jump}]
+
+set_property PACKAGE_PIN H2 [get_ports {p2_reset_btn}]
+set_property IOSTANDARD LVCMOS33 [get_ports {p2_reset_btn}]
+
+set_property PACKAGE_PIN G2 [get_ports {p2_btn_atk}]
+set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_atk}]        //JPMOD
 
 ## -- switches
 ## Switches
@@ -107,4 +124,16 @@ set_property IOSTANDARD LVCMOS33 [get_ports {LED2}]
 
 set_property PACKAGE_PIN J14 [get_ports {LED3}]
 set_property IOSTANDARD LVCMOS33 [get_ports {LED3}]
+
+set_property PACKAGE_PIN P14 [get_ports {LED4}]
+set_property IOSTANDARD LVCMOS33 [get_ports {LED4}]
+
+set_property PACKAGE_PIN T14 [get_ports {LED5}]
+set_property IOSTANDARD LVCMOS33 [get_ports {LED5}]
+
+set_property PACKAGE_PIN K2 [get_ports {LED6}]
+set_property IOSTANDARD LVCMOS33 [get_ports {LED6}]
+
+set_property PACKAGE_PIN U13 [get_ports {LED7}]
+set_property IOSTANDARD LVCMOS33 [get_ports {LED7}]
 
