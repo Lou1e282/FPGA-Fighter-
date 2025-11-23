@@ -22,7 +22,7 @@ module top_twoplayers (
     output wire LED0,    // move_active
     output wire LED1,    // jump_active
     output wire LED2,    // attack_damage
-    output wire LED3     // attack_active    // testing purpose
+    output wire LED3,     // attack_active    // testing purpose
 
     output wire LED4,    // move_active
     output wire LED5,    // jump_active
@@ -63,9 +63,10 @@ module top_twoplayers (
     wire       p1_facing;
     wire       p1_move_active, p1_jump_active;
 
-    player_move pm1 #(
-        .PLAYER_ID(1) 
-    ) (
+    player_move #(
+        .PLAYER_ID(1),
+        .SPAWN_X(100) 
+    ) pm1 (
         .clk(pixclk),
         .reset(reset_btn),
         .SCEN(frame_tick),
@@ -89,10 +90,10 @@ module top_twoplayers (
     wire       p2_facing;
     wire       p2_move_active, p2_jump_active;
 
-    player_move pm2 #(
+    player_move #(
         .PLAYER_ID(0),  
-        .GROUND_X(600)
-    )(
+        .SPAWN_X(600)
+    ) pm2 (
         .clk(pixclk),
         .reset(reset_btn),
         .SCEN(frame_tick),
@@ -152,7 +153,7 @@ module top_twoplayers (
     // ---------------------
     // ---------- p1 ----------------
     wire [3:0] p1_anim_state;
-    wire [5:0] p2_anim_frame;
+    wire [5:0] p1_anim_frame;
 
     wire p1_hitstun_active = 1'b0;  // no resolver yet, so tie low
 
@@ -172,8 +173,8 @@ module top_twoplayers (
     );
 
      // ---------- p2 ----------------
-    wire [3:0] p2_anim_state;
-    wire [5:0] p2_anim_frame;
+    wire [3:0] p1_anim_state;
+    wire [5:0] p1_anim_frame;
 
     wire p2_hitstun_active = 1'b0;  // no resolver yet, so tie low
 
@@ -289,7 +290,7 @@ module top_twoplayers (
     wire [9:0] p1_hurt_y0 = p1_pos_y + 75 - (HURTBOX_H >> 1);
     wire [9:0] p1_hurt_y1 = p1_hurt_y0 + HURTBOX_H;
 
-    wire hurt_on =
+    wire p1_hurt_on =
         (hcount >= p1_hurt_x0) && (hcount < p1_hurt_x1) &&
         (vcount >= p1_hurt_y0) && (vcount < p1_hurt_y1);
 
@@ -308,12 +309,12 @@ module top_twoplayers (
     wire [9:0] p2_hurt_y0 = p2_pos_y + 75 - (HURTBOX_H >> 1);
     wire [9:0] p2_hurt_y1 = p2_hurt_y0 + HURTBOX_H;
 
-    wire hurt_on =
+    wire p2_hurt_on =
         (hcount >= p2_hurt_x0) && (hcount < p2_hurt_x1) &&
         (vcount >= p2_hurt_y0) && (vcount < p2_hurt_y1);
 
-    wire p1_hurt_edge =
-        p1_hurt_on &&
+    wire p2_hurt_edge =
+        p2_hurt_on &&
         (hcount == p2_hurt_x0 || hcount == p2_hurt_x1-1 ||
         vcount == p2_hurt_y0 || vcount == p2_hurt_y1-1);
 

@@ -60,5 +60,5 @@ endmodule
 
 
 # Example
-for i in range (1,30):
-    generate_bram_rom(f"{i}.jpg")
+for i in range(1, 30):
+    generate_bram_rom(f"{i}.png")

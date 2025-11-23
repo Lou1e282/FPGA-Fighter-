@@ -6,6 +6,7 @@ module player_move #(
     parameter POS_WIDTH    = 10,
     parameter GROUND_Y     = 300,
     parameter GROUND_X     = 10,
+    parameter SPAWN_X      = 100, 
     parameter MIN_X        = 40,
     parameter MAX_X        = 600,
     parameter SPEED        = 4'd3,

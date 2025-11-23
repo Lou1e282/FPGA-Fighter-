@@ -28,27 +28,27 @@ set_property IOSTANDARD LVCMOS33 [get_ports {p1_btn_right}]
 set_property PACKAGE_PIN M18 [get_ports {p1_btn_jump}]
 set_property IOSTANDARD LVCMOS33 [get_ports {p1_btn_jump}]
 
-set_property PACKAGE_PIN N17 [get_ports {p1_reset_btn}]
+set_property PACKAGE_PIN N17 [get_ports {reset_btn}]
 set_property IOSTANDARD LVCMOS33 [get_ports {p1_reset_btn}]
 
 set_property PACKAGE_PIN P18 [get_ports {p1_btn_atk}]
 set_property IOSTANDARD LVCMOS33 [get_ports {p1_btn_atk}]
 
-# P2 buttons (assigned to PMOD JA)
-set_property PACKAGE_PIN J1 [get_ports {p2_btn_left}]
+# P2 buttons sw for now
+set_property PACKAGE_PIN H17 [get_ports {p2_btn_left}]
 set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_left}]
 
-set_property PACKAGE_PIN L2 [get_ports {p2_btn_right}]
+set_property PACKAGE_PIN K15 [get_ports {p2_btn_right}]
 set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_right}]
 
-set_property PACKAGE_PIN J2 [get_ports {p2_btn_jump}]
+set_property PACKAGE_PIN J13 [get_ports {p2_btn_jump}]
 set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_jump}]
 
-set_property PACKAGE_PIN H2 [get_ports {p2_reset_btn}]
-set_property IOSTANDARD LVCMOS33 [get_ports {p2_reset_btn}]
+# set_property PACKAGE_PIN N14 [get_ports {p2_reset_btn}]
+# set_property IOSTANDARD LVCMOS33 [get_ports {p2_reset_btn}]
 
-set_property PACKAGE_PIN G2 [get_ports {p2_btn_atk}]
-set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_atk}]        //JPMOD
+set_property PACKAGE_PIN R18 [get_ports {p2_btn_atk}]
+set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_atk}]        
 
 ## -- switches
 ## Switches

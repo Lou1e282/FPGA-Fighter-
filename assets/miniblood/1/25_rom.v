@@ -1,11 +1,11 @@
 module 25_rom(
     input wire clk,
-    input wire [11:0] addr,
+    input wire [13:0] addr,
     output reg [11:0] color
 );
 
     (* rom_style="block" *)
-    reg [11:0] mem [0:4095];
+    reg [11:0] mem [0:15875];
 
     initial begin
         $readmemh("25_12bit.mem", mem);
