@@ -173,8 +173,8 @@ module top_twoplayers (
     );
 
      // ---------- p2 ----------------
-    wire [3:0] p1_anim_state;
-    wire [5:0] p1_anim_frame;
+    wire [3:0] p2_anim_state;
+    wire [5:0] p2_anim_frame;
 
     wire p2_hitstun_active = 1'b0;  // no resolver yet, so tie low
 

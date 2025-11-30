@@ -21,7 +21,7 @@ module player_sprite_mapper (
     localparam S_MOVE   = 4'd1;
     // localparam S_JUMP   = 4'd2;
     localparam S_ATK1   = 4'd3;
-    // localparam S_ATK2   = 4'd4;
+    localparam S_ATK2   = 4'd4;
     // localparam S_HIT    = 4'd5;
 
     // Inside player bounding box?

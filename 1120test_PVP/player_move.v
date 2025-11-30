@@ -41,7 +41,7 @@ module player_move #(
     //--------------------------------------------------------
     always @(posedge clk or posedge reset) begin
         if (reset) begin
-            pos_x        <= GROUND_X;
+            pos_x        <= SPAWN_X;
             pos_y        <= GROUND_Y;
             move_active  <= 1'b0;
             jump_active  <= 1'b0;
