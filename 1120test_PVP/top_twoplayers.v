@@ -360,7 +360,7 @@ module top_twoplayers (
     // ---------------------
     // HP bar configuration
     // ---------------------
-    // localparam integer SCREEN_W   = 640;
+    localparam integer SCREEN_W   = 640;
     localparam integer HP_BAR_W   = 200;
     localparam integer HP_BAR_H   = 8;
     localparam integer HP_MARGIN_X = 20;
