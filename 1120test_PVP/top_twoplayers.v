@@ -92,7 +92,7 @@ module top_twoplayers (
 
     player_move #(
         .PLAYER_ID(0),  
-        .SPAWN_X(600)
+        .SPAWN_X(400)
     ) pm2 (
         .clk(pixclk),
         .reset(reset_btn),
@@ -237,8 +237,35 @@ module top_twoplayers (
         .sprite_rgb(p2_sprite_rgb)
     );
 
+    // ---------------------
+    // HP tracker
+    // ---------------------
+    localparam integer MAX_HP_PARAM    = 10;
+    localparam integer DMG_PER_HIT    = 1;
 
+    wire [7:0] p1_hp, p2_hp;
+    wire       p1_dead, p2_dead;
 
+    hp_tracker #(
+        .MAX_HP(MAX_HP_PARAM),
+        .DAMAGE_PER_HIT(DMG_PER_HIT)
+    ) hp_mod (
+        .clk(pixclk),
+        .reset(reset_btn),
+        .SCEN(frame_tick),
+        .p1_hit_event(p1_hit_event),
+        .p2_hit_event(p2_hit_event),
+        .p1_hp(p1_hp),
+        .p2_hp(p2_hp),
+        .p1_dead(p1_dead),
+        .p2_dead(p2_dead)
+    );
+
+    ////////////////////////////////////////////
+    //////////// VGA TEST //////////////////////
+    ////////////////////////////////////////////
+
+     
     // ------------------------------------------------------------
     // Simple Attack Hitbox (Green Box)
     // ------------------------------------------------------------
@@ -319,7 +346,6 @@ module top_twoplayers (
         vcount == p2_hurt_y0 || vcount == p2_hurt_y1-1);
 
     wire [11:0] p2_hurt_rgb = p2_hurt_edge ? 12'hF00 : 12'h000; // RED
-
    
     // ---------------------
     // Ground line
@@ -332,16 +358,104 @@ module top_twoplayers (
     wire [11:0] ground_rgb = ground_on ? 12'h0F0 : 12'h000;
 
     // ---------------------
+    // HP bar configuration
+    // ---------------------
+    // localparam integer SCREEN_W   = 640;
+    localparam integer HP_BAR_W   = 200;
+    localparam integer HP_BAR_H   = 8;
+    localparam integer HP_MARGIN_X = 20;
+    localparam integer HP_MARGIN_Y = 20;
+
+    // Scale HP (0..MAX_HP_PARAM) → pixels (0..HP_BAR_W)
+    wire [15:0] p1_hp_scaled = p1_hp * HP_BAR_W;
+    wire [15:0] p2_hp_scaled = p2_hp * HP_BAR_W;
+
+    wire [9:0]  p1_hp_px     = p1_hp_scaled / MAX_HP_PARAM;
+    wire [9:0]  p2_hp_px     = p2_hp_scaled / MAX_HP_PARAM;
+
+    // P1 bar position: top-left
+    localparam integer P1_BAR_X0 = HP_MARGIN_X;
+    localparam integer P1_BAR_Y0 = HP_MARGIN_Y;
+
+    // P2 bar position: top-right
+    localparam integer P2_BAR_X0 = SCREEN_W - HP_MARGIN_X - HP_BAR_W;
+    localparam integer P2_BAR_Y0 = HP_MARGIN_Y;
+    localparam integer P2_BAR_X1 = SCREEN_W - HP_MARGIN_X;
+
+    // P1 HP bar region (top-left)
+    wire p1_hp_region =
+        (vcount >= P1_BAR_Y0) &&
+        (vcount <  P1_BAR_Y0 + HP_BAR_H) &&
+        (hcount >= P1_BAR_X0) &&
+        (hcount <  P1_BAR_X0 + HP_BAR_W);
+
+    // P1 filled part
+    wire p1_hp_fill =
+        p1_hp_region &&
+        (hcount < P1_BAR_X0 + p1_hp_px);
+
+    // Optional P1 border
+    wire p1_hp_edge =
+        p1_hp_region &&
+    ((hcount == P1_BAR_X0) ||
+        (hcount == P1_BAR_X0 + HP_BAR_W - 1) ||
+        (vcount == P1_BAR_Y0) ||
+        (vcount == P1_BAR_Y0 + HP_BAR_H - 1));
+
+    // P2 HP bar region (top-right)
+    wire p2_hp_region =
+        (vcount >= P2_BAR_Y0) &&
+        (vcount <  P2_BAR_Y0 + HP_BAR_H) &&
+        (hcount >= P2_BAR_X0) &&
+        (hcount <  P2_BAR_X1);
+
+    // P2 filled part (fills from left toward right, but sits on right side of screen)
+    wire p2_hp_fill =
+        p2_hp_region &&
+        (hcount < P2_BAR_X0 + p2_hp_px);
+
+    // Optional P2 border
+    wire p2_hp_edge =
+        p2_hp_region &&
+    ((hcount == P2_BAR_X0) ||
+        (hcount == P2_BAR_X1 - 1) ||
+        (vcount == P2_BAR_Y0) ||
+        (vcount == P2_BAR_Y0 + HP_BAR_H - 1));
+
+    wire [11:0] p1_hp_rgb =
+    p1_hp_fill ? 12'h0F0 :    // filled = green
+    p1_hp_edge ? 12'hFFF :    // border = white
+                 12'h000;     // background
+
+    wire [11:0] p2_hp_rgb =
+        p2_hp_fill ? 12'h0F0 :
+        p2_hp_edge ? 12'hFFF :
+                    12'h000;
+
+
+    // ---------------------
     // Final VGA output
     // ---------------------
+    // wire [11:0] final_rgb =
+    //     p1_atk_edge ? 12'h0F0 :
+    //     p2_atk_edge ? 12'h0F0 :
+    //     p1_hurt_edge? 12'hF00 :
+    //     p2_hurt_edge? 12'hF00 :
+    //     p1_sprite_on ? p1_sprite_rgb :
+    //     p2_sprite_on ? p2_sprite_rgb :
+    //     ground_rgb;
+
     wire [11:0] final_rgb =
-        p1_atk_edge ? 12'h0F0 :
-        p2_atk_edge ? 12'h0F0 :
-        p1_hurt_edge? 12'hF00 :
-        p2_hurt_edge? 12'hF00 :
+        p1_hp_region ? p1_hp_rgb :
+        p2_hp_region ? p2_hp_rgb :
+        p1_atk_edge  ? 12'h0F0 :
+        p2_atk_edge  ? 12'h0F0 :
+        p1_hurt_edge ? 12'hF00 :
+        p2_hurt_edge ? 12'hF00 :
         p1_sprite_on ? p1_sprite_rgb :
         p2_sprite_on ? p2_sprite_rgb :
         ground_rgb;
+
 
 
     assign vga_r = visible ? final_rgb[11:8] : 4'h0;

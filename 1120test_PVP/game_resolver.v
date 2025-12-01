@@ -86,15 +86,19 @@ module game_resolver #(
 
         // Attack boxes (match green boxes exactly)
         if (p1_attack_damage) begin
-            p1_ax = p1_face_right ? (p1_x + ATK_FWD) : (p1_x + ATK_FWD - ATK_W);
-            p1_ay = p1_y + ATK_UP;
+            p1_ax = p1_face_right ?
+                    (p1_x + 25 + 60) :
+                    (p1_x - 25 + 60 - ATK_W);
+            p1_ay = p1_y + 35 - (ATK_H/2);
         end else begin
             p1_ax = 0; p1_ay = 0;
         end
 
         if (p2_attack_damage) begin
-            p2_ax = p2_face_right ? (p2_x + ATK_FWD) : (p2_x + ATK_FWD - ATK_W);
-            p2_ay = p2_y + ATK_UP;
+            p2_ax = p2_face_right ?
+                    (p2_x + 25 + 60) :
+                    (p2_x - 25 + 60 - ATK_W);
+            p2_ay = p2_y + 35 - (ATK_H/2);
         end else begin
             p2_ax = 0; p2_ay = 0;
         end
