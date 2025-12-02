@@ -236,15 +236,55 @@ module top_twoplayers (
         .sprite_on(p2_sprite_on),
         .sprite_rgb(p2_sprite_rgb)
     );
+    // ---------------------
+    // Game resolver
+    // ---------------------
+
+    // Game resolver wires
+    wire        p1_hit_event, p2_hit_event;
+    wire        p1_hitstun,   p2_hitstun;
+    wire signed [7:0] p1_kb_dx, p1_kb_dy;
+    wire signed [7:0] p2_kb_dx, p2_kb_dy;
+
+       game_resolver #(
+        .POS_WIDTH(10),
+        .HITSTUN_FRAMES(12),
+        .KB_X(4),
+        .KB_Y(-2)
+    ) u_game_resolver (
+        .clk            (pixclk),       
+        .reset          (reset_btn),
+        .SCEN           (frame_tick),
+
+        // P1
+        .p1_x           (p1_pos_x),
+        .p1_y           (p1_pos_y),
+        .p1_face_right  (p1_facing),
+        .p1_attack_damage(p1_attack_damage),
+
+        // P2
+        .p2_x           (p2_pos_x),
+        .p2_y           (p2_pos_y),
+        .p2_face_right  (p2_facing),
+        .p2_attack_damage(p2_attack_damage),
+
+        // OUT
+        .p1_hit_event   (p1_hit_event),
+        .p2_hit_event   (p2_hit_event),
+        .p1_hitstun     (p1_hitstun),
+        .p2_hitstun     (p2_hitstun),
+        .p1_kb_dx       (p1_kb_dx),
+        .p1_kb_dy       (p1_kb_dy),
+        .p2_kb_dx       (p2_kb_dx),
+        .p2_kb_dy       (p2_kb_dy)     
+    );
+
 
     // ---------------------
     // HP tracker
     // ---------------------
-    localparam integer MAX_HP_PARAM    = 10;
-    localparam integer DMG_PER_HIT    = 1;
-
-    wire [7:0] p1_hp, p2_hp;
-    wire       p1_dead, p2_dead;
+    localparam integer MAX_HP_PARAM = 10;
+    localparam integer DMG_PER_HIT  = 1;
 
     hp_tracker #(
         .MAX_HP(MAX_HP_PARAM),
@@ -252,7 +292,7 @@ module top_twoplayers (
     ) hp_mod (
         .clk(pixclk),
         .reset(reset_btn),
-        .SCEN(frame_tick),
+        .SCEN(frame_tick),      // unused inside, but fine to connect
         .p1_hit_event(p1_hit_event),
         .p2_hit_event(p2_hit_event),
         .p1_hp(p1_hp),

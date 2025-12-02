@@ -1,7 +1,8 @@
 //------------------------------------------------------------------------------
-// Simplified game_resolver.v (matches top_twoplayers hurtbox/hitbox geometry)
+// game_resolver.v
 //  - Uses same 40x45 red hurtbox as VGA
 //  - Uses same 40x80 attack box (green) as VGA
+//  - ONE HIT PER ENTRY: damage only when hitbox ENTERS hurtbox (0→1 overlap)
 //  - Emits 1-cycle hit_event and hitstun + knockback
 //------------------------------------------------------------------------------
 
@@ -9,8 +10,8 @@ module game_resolver #(
     parameter POS_WIDTH = 10,
 
     // VGA Hurtbox (centered at sprite torso)
-    parameter HURT_W = 40,
-    parameter HURT_H = 45,
+    parameter HURT_W   = 40,
+    parameter HURT_H   = 45,
     parameter HURT_OFFX = 60 - (HURT_W/2),   // match pX_hurt_x0 = pos_x + 60 - W/2
     parameter HURT_OFFY = 75 - (HURT_H/2),
 
@@ -54,7 +55,7 @@ module game_resolver #(
     // ------------------------------------------------------------------
     // AABB helper
     // ------------------------------------------------------------------
-    function automatic bit aabb_hit;
+    function aabb_hit;
         input integer ax, ay, aw, ah;
         input integer bx, by, bw, bh;
         begin
@@ -74,7 +75,10 @@ module game_resolver #(
     // ------------------------------------------------------------------
     integer p1_ax, p1_ay, p2_ax, p2_ay;
 
+    // current overlap flags (combinational)
     reg p1_hits_p2, p2_hits_p1;
+    // previous overlap flags (for 0→1 edge detect)
+    reg p1_hits_p2_d, p2_hits_p1_d;
 
     // ----- Combinational: compute AABBs -----
     always @* begin
@@ -91,7 +95,8 @@ module game_resolver #(
                     (p1_x - 25 + 60 - ATK_W);
             p1_ay = p1_y + 35 - (ATK_H/2);
         end else begin
-            p1_ax = 0; p1_ay = 0;
+            p1_ax = 0;
+            p1_ay = 0;
         end
 
         if (p2_attack_damage) begin
@@ -100,10 +105,11 @@ module game_resolver #(
                     (p2_x - 25 + 60 - ATK_W);
             p2_ay = p2_y + 35 - (ATK_H/2);
         end else begin
-            p2_ax = 0; p2_ay = 0;
+            p2_ax = 0;
+            p2_ay = 0;
         end
 
-        // Detection
+        // Detection (current frame)
         p1_hits_p2 =
             p1_attack_damage &&
             aabb_hit(p1_ax,p1_ay, ATK_W,ATK_H, p2_hx,p2_hy, HURT_W,HURT_H);
@@ -120,46 +126,58 @@ module game_resolver #(
 
     always @(posedge clk or posedge reset) begin
         if (reset) begin
-            p1_hit_event <= 0;
-            p2_hit_event <= 0;
-            p1_hitstun   <= 0;
-            p2_hitstun   <= 0;
-            p1_stun <= 0;
-            p2_stun <= 0;
-            p1_kb_dx <= 0; p1_kb_dy <= 0;
-            p2_kb_dx <= 0; p2_kb_dy <= 0;
+            p1_hit_event   <= 0;
+            p2_hit_event   <= 0;
+            p1_hitstun     <= 0;
+            p2_hitstun     <= 0;
+            p1_stun        <= 0;
+            p2_stun        <= 0;
+            p1_kb_dx       <= 0;
+            p1_kb_dy       <= 0;
+            p2_kb_dx       <= 0;
+            p2_kb_dy       <= 0;
+            p1_hits_p2_d   <= 0;
+            p2_hits_p1_d   <= 0;
         end else if (SCEN) begin
+            // latch previous collision state
+            p1_hits_p2_d <= p1_hits_p2;
+            p2_hits_p1_d <= p2_hits_p1;
 
+            // default: no hit this frame
             p1_hit_event <= 0;
             p2_hit_event <= 0;
 
-            // --- P1 hits P2 ---
-            if (p1_hits_p2) begin
+            // --- P1 hits P2: only on 0→1 edge of overlap ---
+            if (p1_hits_p2 && !p1_hits_p2_d) begin
                 p2_hit_event <= 1;
                 p2_hitstun   <= 1;
                 p2_stun      <= HITSTUN_FRAMES;
-                p2_kb_dx <= p1_face_right ? KB_X : -KB_X;
-                p2_kb_dy <= KB_Y;
+                p2_kb_dx     <= p1_face_right ? KB_X : -KB_X;
+                p2_kb_dy     <= KB_Y;
             end
 
-            // --- P2 hits P1 ---
-            if (p2_hits_p1) begin
+            // --- P2 hits P1: only on 0→1 edge of overlap ---
+            if (p2_hits_p1 && !p2_hits_p1_d) begin
                 p1_hit_event <= 1;
                 p1_hitstun   <= 1;
                 p1_stun      <= HITSTUN_FRAMES;
-                p1_kb_dx <= p2_face_right ? KB_X : -KB_X;
-                p1_kb_dy <= KB_Y;
+                p1_kb_dx     <= p2_face_right ? KB_X : -KB_X;
+                p1_kb_dy     <= KB_Y;
             end
 
             // --- stun countdown ---
             if (p1_hitstun) begin
-                if (p1_stun == 0) p1_hitstun <= 0;
-                else              p1_stun <= p1_stun - 1;
+                if (p1_stun == 0)
+                    p1_hitstun <= 0;
+                else
+                    p1_stun <= p1_stun - 1;
             end
 
             if (p2_hitstun) begin
-                if (p2_stun == 0) p2_hitstun <= 0;
-                else              p2_stun <= p2_stun - 1;
+                if (p2_stun == 0)
+                    p2_hitstun <= 0;
+                else
+                    p2_stun <= p2_stun - 1;
             end
         end
     end
