@@ -70,7 +70,7 @@ module top_twoplayers (
         .clk(pixclk),
         .reset(reset_btn),
         .SCEN(frame_tick),
-        .move_enable(1'b1),
+        .move_enable(controls_enable)),
         .move_left(p1_btn_left),
         .move_right(p1_btn_right),
         .jump(p1_btn_jump),
@@ -97,7 +97,7 @@ module top_twoplayers (
         .clk(pixclk),
         .reset(reset_btn),
         .SCEN(frame_tick),
-        .move_enable(1'b1),
+        .move_enable(controls_enable),
         .move_left(p2_btn_left),
         .move_right(p2_btn_right),
         .jump(p2_btn_jump),
@@ -121,7 +121,7 @@ module top_twoplayers (
     .clk(pixclk),
     .reset(reset_btn),
     .SCEN(frame_tick),
-    .attack_enable(1'b1),
+    .attack_enable(1'b1),          //// left to fix hitstun 
     .attack1(p1_btn_atk),
 
     .attack_active(p1_attack_active),
@@ -285,6 +285,18 @@ module top_twoplayers (
     // ---------------------
     localparam integer MAX_HP_PARAM = 10;
     localparam integer DMG_PER_HIT  = 1;
+    
+    // player hp
+    wire [7:0] p1_hp;
+    wire [7:0] p2_hp;
+    wire       p1_dead;
+    wire       p2_dead;
+
+    wire [15:0] p1_hp_scaled = p1_hp * HP_BAR_W;
+    wire [15:0] p2_hp_scaled = p2_hp * HP_BAR_W;
+    wire [9:0]  p1_hp_px     = p1_hp_scaled / MAX_HP_PARAM;
+    wire [9:0]  p2_hp_px     = p2_hp_scaled / MAX_HP_PARAM;
+
 
     hp_tracker #(
         .MAX_HP(MAX_HP_PARAM),
@@ -301,9 +313,70 @@ module top_twoplayers (
         .p2_dead(p2_dead)
     );
 
-    ////////////////////////////////////////////
-    //////////// VGA TEST //////////////////////
-    ////////////////////////////////////////////
+    // ---------------------
+    // Game over logic
+    // ---------------------
+    wire game_over       = p1_dead | p2_dead;
+    wire controls_enable = ~game_over;
+
+    // ---------------------
+    // HP tail (damage trail)
+    // ---------------------
+    localparam integer TAIL_DECAY_DELAY = 2;   // frames per pixel of tail shrink
+
+    reg [9:0] p1_hp_tail_px;
+    reg [9:0] p2_hp_tail_px;
+
+    reg [3:0] p1_tail_cnt;
+    reg [3:0] p2_tail_cnt;
+
+    always @(posedge pixclk or posedge reset_btn) begin
+        if (reset_btn) begin
+            // start tail at full bar
+            p1_hp_tail_px <= HP_BAR_W[9:0];
+            p2_hp_tail_px <= HP_BAR_W[9:0];
+            p1_tail_cnt   <= 0;
+            p2_tail_cnt   <= 0;
+        end else if (frame_tick) begin
+            // ---------------- P1 tail ----------------
+
+            if (p1_hp_px >= p1_hp_tail_px) begin
+                // HP increased or just equal → snap tail to HP
+                
+                p1_hp_tail_px <= p1_hp_px;
+                p1_tail_cnt   <= 0;
+            end else begin
+                // HP dropped → slowly shrink tail down to HP
+
+                if (p1_tail_cnt == TAIL_DECAY_DELAY) begin
+                    p1_tail_cnt <= 0;
+                    if (p1_hp_tail_px > p1_hp_px)
+                        p1_hp_tail_px <= p1_hp_tail_px - 1'b1;
+                end else begin
+                    p1_tail_cnt <= p1_tail_cnt + 1'b1;
+                end
+            end
+
+            // ---------------- P2 tail ----------------
+            if (p2_hp_px >= p2_hp_tail_px) begin
+                p2_hp_tail_px <= p2_hp_px;
+                p2_tail_cnt   <= 0;
+            end else begin
+                if (p2_tail_cnt == TAIL_DECAY_DELAY) begin
+                    p2_tail_cnt <= 0;
+                    if (p2_hp_tail_px > p2_hp_px)
+                        p2_hp_tail_px <= p2_hp_tail_px - 1'b1;
+                end else begin
+                    p2_tail_cnt <= p2_tail_cnt + 1'b1;
+                end
+            end
+        end
+    end
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////// VGA TEST ///////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
      
     // ------------------------------------------------------------
@@ -422,6 +495,7 @@ module top_twoplayers (
     localparam integer P2_BAR_Y0 = HP_MARGIN_Y;
     localparam integer P2_BAR_X1 = SCREEN_W - HP_MARGIN_X;
 
+    // P1 HP bar -------------------------------------------------------------------------------
     // P1 HP bar region (top-left)
     wire p1_hp_region =
         (vcount >= P1_BAR_Y0) &&
@@ -433,6 +507,12 @@ module top_twoplayers (
     wire p1_hp_fill =
         p1_hp_region &&
         (hcount < P1_BAR_X0 + p1_hp_px);
+
+    // P1 damage tail region (
+    wire p1_hp_tail_fill =
+        p1_hp_region &&
+        (hcount >= P1_BAR_X0 + p1_hp_px) &&
+        (hcount <  P1_BAR_X0 + p1_hp_tail_px);
 
     // Optional P1 border
     wire p1_hp_edge =
@@ -449,10 +529,17 @@ module top_twoplayers (
         (hcount >= P2_BAR_X0) &&
         (hcount <  P2_BAR_X1);
 
-    // P2 filled part (fills from left toward right, but sits on right side of screen)
+    // P2 filled part (fills from right side)
     wire p2_hp_fill =
         p2_hp_region &&
-        (hcount < P2_BAR_X0 + p2_hp_px);
+        (hcount >= P2_BAR_X1 - p2_hp_px);
+
+    // P2 damage tail region (red), between tail and current HP
+    wire p2_hp_tail_fill =
+        p2_hp_region &&
+        (hcount >= P2_BAR_X1 - p2_hp_tail_px) &&
+        (hcount <  P2_BAR_X1 - p2_hp_px);
+
 
     // Optional P2 border
     wire p2_hp_edge =
@@ -463,14 +550,31 @@ module top_twoplayers (
         (vcount == P2_BAR_Y0 + HP_BAR_H - 1));
 
     wire [11:0] p1_hp_rgb =
-    p1_hp_fill ? 12'h0F0 :    // filled = green
-    p1_hp_edge ? 12'hFFF :    // border = white
-                 12'h000;     // background
+        p1_hp_fill      ? 12'h0F0 :   // current HP = green
+        p1_hp_tail_fill ? 12'hF00 :   // damage tail = red
+        p1_hp_edge      ? 12'hFFF :   // border = white
+                          12'h000;    // background
 
     wire [11:0] p2_hp_rgb =
-        p2_hp_fill ? 12'h0F0 :
-        p2_hp_edge ? 12'hFFF :
-                    12'h000;
+        p2_hp_fill      ? 12'h0F0 :
+        p2_hp_tail_fill ? 12'hF00 :
+        p2_hp_edge      ? 12'hFFF :
+                          12'h000;
+
+    // ---------------------
+    // Game over overlay
+    // ---------------------
+    wire        game_over_on;
+    wire [11:0] game_over_rgb;
+
+    game_over_text u_game_over_text (
+        .clk       (pixclk),
+        .game_over (game_over),
+        .hcount    (hcount),
+        .vcount    (vcount),
+        .pixel_on  (game_over_on),
+        .pixel_rgb (game_over_rgb)
+    );
 
 
     // ---------------------
@@ -485,7 +589,19 @@ module top_twoplayers (
     //     p2_sprite_on ? p2_sprite_rgb :
     //     ground_rgb;
 
+    // wire [11:0] final_rgb =
+    //     p1_hp_region ? p1_hp_rgb :
+    //     p2_hp_region ? p2_hp_rgb :
+    //     p1_atk_edge  ? 12'h0F0 :
+    //     p2_atk_edge  ? 12'h0F0 :
+    //     p1_hurt_edge ? 12'hF00 :
+    //     p2_hurt_edge ? 12'hF00 :
+    //     p1_sprite_on ? p1_sprite_rgb :
+    //     p2_sprite_on ? p2_sprite_rgb :
+    //     ground_rgb;
+
     wire [11:0] final_rgb =
+        game_over_on ? game_over_rgb :     // GAME OVER on top of everything
         p1_hp_region ? p1_hp_rgb :
         p2_hp_region ? p2_hp_rgb :
         p1_atk_edge  ? 12'h0F0 :
@@ -495,8 +611,6 @@ module top_twoplayers (
         p1_sprite_on ? p1_sprite_rgb :
         p2_sprite_on ? p2_sprite_rgb :
         ground_rgb;
-
-
 
     assign vga_r = visible ? final_rgb[11:8] : 4'h0;
     assign vga_g = visible ? final_rgb[7:4]  : 4'h0;

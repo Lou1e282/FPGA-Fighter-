@@ -19,9 +19,10 @@ module player_sprite_mapper (
     localparam S_IDLE = 4'd0;
     localparam S_MOVE = 4'd1;
     localparam S_ATK1 = 4'd3;
+    localparam S_HIT  = 4'd5; 
 
     // ============================
-    // Inside bounding box
+    // Base Character Sprite
     // ============================
     wire inside =
         (hcount >= pos_x) && (hcount < pos_x + SPR_W) &&
@@ -30,8 +31,30 @@ module player_sprite_mapper (
     wire [6:0] row = vcount - pos_y;
     wire [6:0] col_unf = hcount - pos_x;
     wire [6:0] col = facing_right ? col_unf : (SPR_W - 1 - col_unf);
-
     wire [13:0] spr_addr = row * SPR_W + col;
+
+    // Position where the character was hit        // hit animation
+    reg [9:0] hit_x, hit_y;
+
+    // ============================
+    // HIT EFFECT (stays at hit_x/y)
+    // ============================
+    wire inside_hit =
+        (hcount >= hit_x) && (hcount < hit_x + SPR_W) &&
+        (vcount >= hit_y) && (vcount < hit_y + SPR_H);
+
+    wire [6:0] row_hit    = vcount - hit_y;
+    wire [6:0] col_unf_hit= hcount - hit_x;
+    wire [6:0] col_hit    = facing_right ? col_unf_hit : (SPR_W - 1 - col_unf_hit);
+    wire [13:0] hit_addr  = row_hit * SPR_W + col_hit;
+
+     always @(posedge clk) begin
+        // latch the position at the START of the hit animation
+        if (anim_state == S_HIT && anim_frame == 6'd0) begin
+            hit_x <= pos_x;
+            hit_y <= pos_y;
+        end
+    end
 
     // =====================================================
     // RAW (unregistered) BRAM outputs — same names as yours
@@ -57,6 +80,7 @@ module player_sprite_mapper (
 
     wire [11:0] idle_rgb_raw [0:9];
     wire [11:0] run_rgb_raw  [0:7];
+    wire [11:0] hit_rgb_raw  [0:15];    
 
     // ============================
     // Instantiate ROMs (unchanged)
@@ -104,6 +128,25 @@ module player_sprite_mapper (
     Run_6_rom run_6 (.clk(clk), .addr(spr_addr), .color(run_rgb_raw[6]));
     Run_7_rom run_7 (.clk(clk), .addr(spr_addr), .color(run_rgb_raw[7]));
 
+    // HIT ROMS
+    HIT_000_rom hit_0  (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[0]));
+    HIT_001_rom hit_1  (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[1]));
+    HIT_002_rom hit_2  (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[2]));
+    HIT_003_rom hit_3  (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[3]));
+    HIT_004_rom hit_4  (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[4]));
+    HIT_005_rom hit_5  (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[5]));
+    HIT_006_rom hit_6  (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[6]));
+    HIT_007_rom hit_7  (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[7]));
+    HIT_008_rom hit_8  (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[8]));
+    HIT_009_rom hit_9  (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[9]));
+    HIT_010_rom hit_10 (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[10]));
+    HIT_011_rom hit_11 (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[11]));
+    HIT_012_rom hit_12 (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[12]));
+    HIT_013_rom hit_13 (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[13]));
+    HIT_014_rom hit_14 (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[14]));
+    HIT_015_rom hit_15 (.clk(clk), .addr(hit_addr), .color(hit_rgb_raw[15]));
+
+
     // ===================================
     // PIPELINED (REGISTERED) BRAM outputs
     // ===================================
@@ -115,6 +158,7 @@ module player_sprite_mapper (
 
     reg [11:0] idle_rgb [0:9];
     reg [11:0] run_rgb  [0:7];
+    reg [11:0] hit_rgb  [0:15];
 
     integer i;
     always @(posedge clk) begin
@@ -147,50 +191,71 @@ module player_sprite_mapper (
             run_rgb[i] <= run_rgb_raw[i];
     end
 
-    // ===================================
+       // ===================================
     // STATE / FRAME SELECTOR
     // ===================================
     always @(*) begin
-        sprite_rgb = 12'h000;
+        base_rgb        = 12'h000;
+        hit_overlay_rgb = 12'h000;
+        sprite_rgb      = 12'h000;
 
+        // ------------------------
+        // BASE SPRITE (follows pos_x/pos_y)
+        // ------------------------
         if (inside) begin
             case (anim_state)
 
                 S_IDLE:
-                    sprite_rgb = idle_rgb[0];
+                    base_rgb = idle_rgb[0];   // or use anim_frame if you want
 
                 S_MOVE:
-                    sprite_rgb = run_rgb[ anim_frame[2:0] ];
+                    base_rgb = run_rgb[ anim_frame[2:0] ];
 
                 S_ATK1:
                     case (anim_frame)
-                        6'd0:  sprite_rgb = atk1_f0_rgb;
-                        6'd1:  sprite_rgb = atk1_f1_rgb;
-                        6'd2:  sprite_rgb = atk1_f2_rgb;
-                        6'd3:  sprite_rgb = atk1_f3_rgb;
-                        6'd4:  sprite_rgb = atk1_f4_rgb;
-                        6'd5:  sprite_rgb = atk1_f5_rgb;
-                        6'd6:  sprite_rgb = atk1_f6_rgb;
-                        6'd7:  sprite_rgb = atk1_f7_rgb;
-                        6'd8:  sprite_rgb = atk1_f8_rgb;
-                        6'd9:  sprite_rgb = atk1_f9_rgb;
-                        6'd10: sprite_rgb = atk1_f10_rgb;
-                        6'd11: sprite_rgb = atk1_f11_rgb;
-                        6'd12: sprite_rgb = atk1_f12_rgb;
-                        6'd13: sprite_rgb = atk1_f13_rgb;
-                        6'd14: sprite_rgb = atk1_f14_rgb;
-                        6'd15: sprite_rgb = atk1_f15_rgb;
-                        6'd16: sprite_rgb = atk1_f16_rgb;
-                        6'd17: sprite_rgb = atk1_f17_rgb;
-                        default: sprite_rgb = atk1_f0_rgb;
+                        6'd0:  base_rgb = atk1_f0_rgb;
+                        6'd1:  base_rgb = atk1_f1_rgb;
+                        6'd2:  base_rgb = atk1_f2_rgb;
+                        6'd3:  base_rgb = atk1_f3_rgb;
+                        6'd4:  base_rgb = atk1_f4_rgb;
+                        6'd5:  base_rgb = atk1_f5_rgb;
+                        6'd6:  base_rgb = atk1_f6_rgb;
+                        6'd7:  base_rgb = atk1_f7_rgb;
+                        6'd8:  base_rgb = atk1_f8_rgb;
+                        6'd9:  base_rgb = atk1_f9_rgb;
+                        6'd10: base_rgb = atk1_f10_rgb;
+                        6'd11: base_rgb = atk1_f11_rgb;
+                        6'd12: base_rgb = atk1_f12_rgb;
+                        6'd13: base_rgb = atk1_f13_rgb;
+                        6'd14: base_rgb = atk1_f14_rgb;
+                        6'd15: base_rgb = atk1_f15_rgb;
+                        6'd16: base_rgb = atk1_f16_rgb;
+                        6'd17: base_rgb = atk1_f17_rgb;
+                        default: base_rgb = atk1_f0_rgb;
                     endcase
 
                 default:
-                    sprite_rgb = idle_rgb[0];
+                    base_rgb = idle_rgb[0];
             endcase
         end
+
+        // ------------------------
+        // HIT OVERLAY (stays at hit_x/hit_y)
+        // ------------------------
+        if (inside_hit && anim_state == S_HIT) begin
+            hit_overlay_rgb = hit_rgb[ anim_frame[3:0] ];
+        end
+
+        // ------------------------
+        // LAYERING
+        // ------------------------
+        if (hit_overlay_rgb != 12'h000)
+            sprite_rgb = hit_overlay_rgb;  // draw hit on top
+        else
+            sprite_rgb = base_rgb;         // otherwise normal sprite
     end
 
-    assign sprite_on = inside && (sprite_rgb != 12'h000);
+    assign sprite_on = (sprite_rgb != 12'h000) && (inside || inside_hit);
+
 
 endmodule
