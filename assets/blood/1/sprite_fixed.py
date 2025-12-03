@@ -74,7 +74,6 @@ endmodule
 # ------------------------------------------------------------
 # Example usage
 # ------------------------------------------------------------
-if __name__ == "__main__":
-    for i in range(10,19): 
-        generate_bram_rom(f"1_0{i}.png")
+if __name__ == "__main__": 
+    generate_bram_rom(f"hit_009.png")
 
