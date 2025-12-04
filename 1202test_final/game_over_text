@@ -1,0 +1,178 @@
+// ============================================================================
+// Simple "GAME OVER" overlay text
+// Draws scaled 8x8 font, centered on 640x480
+// ============================================================================
+module game_over_text (
+    input  wire       clk,        // unused, but kept for symmetry
+    input  wire       game_over,
+    input  wire [9:0] hcount,
+    input  wire [9:0] vcount,
+    output wire       pixel_on,
+    output wire [11:0] pixel_rgb
+);
+
+    // Screen & text geometry
+    localparam integer SCREEN_W   = 640;
+    localparam integer SCREEN_H   = 480;
+
+    localparam integer FONT_W     = 8;
+    localparam integer FONT_H     = 8;
+    localparam integer SCALE      = 4;      // scale 8x8 → 32x32 per char
+    localparam integer NUM_CHARS  = 8;      // "GAME OVER"
+
+    localparam integer TEXT_W     = NUM_CHARS * FONT_W * SCALE; // 256
+    localparam integer TEXT_H     = FONT_H * SCALE;             // 32
+
+    localparam integer TEXT_X0    = (SCREEN_W - TEXT_W) / 2;    // 192
+    localparam integer TEXT_Y0    = (SCREEN_H - TEXT_H) / 2;    // 224
+
+    wire in_region =
+        game_over &&
+        (hcount >= TEXT_X0) && (hcount < TEXT_X0 + TEXT_W) &&
+        (vcount >= TEXT_Y0) && (vcount < TEXT_Y0 + TEXT_H);
+
+    // Coordinates within the text block
+    wire [9:0] rel_x  = hcount - TEXT_X0;
+    wire [9:0] rel_y  = vcount - TEXT_Y0;
+
+    // Scale down to font space
+    wire [9:0] fx = rel_x / SCALE;  // 0..(NUM_CHARS*FONT_W-1)
+    wire [9:0] fy = rel_y / SCALE;  // 0..(FONT_H-1)
+
+    wire [2:0] char_col = fx / FONT_W;          // which character (0..7)
+    wire [2:0] font_x   = fx % FONT_W;          // 0..7
+    wire [2:0] font_y   = fy[2:0];              // 0..7
+
+    // Map character index to letter:
+    // 0:G, 1:A, 2:M, 3:E, 4:O, 5:V, 6:E, 7:R
+    function [3:0] char_code;
+        input [2:0] idx;
+        begin
+            case (idx)
+                3'd0: char_code = 4'd0; // G
+                3'd1: char_code = 4'd1; // A
+                3'd2: char_code = 4'd2; // M
+                3'd3: char_code = 4'd3; // E
+                3'd4: char_code = 4'd4; // O
+                3'd5: char_code = 4'd5; // V
+                3'd6: char_code = 4'd3; // E (reuse)
+                3'd7: char_code = 4'd6; // R
+                default: char_code = 4'd7; // blank
+            endcase
+        end
+    endfunction
+
+    // 8x8 font bitmaps for letters [0..6]
+    // Each row is 8 bits: bit 7 = leftmost pixel
+    function [7:0] font_row;
+        input [3:0] ch;
+        input [2:0] row;
+        begin
+            case (ch)
+                // ---------------- G ----------------
+                4'd0: begin
+                    case (row)
+                        3'd0: font_row = 8'b00111100;
+                        3'd1: font_row = 8'b01100110;
+                        3'd2: font_row = 8'b11000000;
+                        3'd3: font_row = 8'b11011110;
+                        3'd4: font_row = 8'b11000110;
+                        3'd5: font_row = 8'b11000110;
+                        3'd6: font_row = 8'b01111100;
+                        default: font_row = 8'b00000000;
+                    endcase
+                end
+                // ---------------- A ----------------
+                4'd1: begin
+                    case (row)
+                        3'd0: font_row = 8'b00111100;
+                        3'd1: font_row = 8'b01100110;
+                        3'd2: font_row = 8'b11000011;
+                        3'd3: font_row = 8'b11111111;
+                        3'd4: font_row = 8'b11000011;
+                        3'd5: font_row = 8'b11000011;
+                        3'd6: font_row = 8'b11000011;
+                        default: font_row = 8'b00000000;
+                    endcase
+                end
+                // ---------------- M ----------------
+                4'd2: begin
+                    case (row)
+                        3'd0: font_row = 8'b11000011;
+                        3'd1: font_row = 8'b11100111;
+                        3'd2: font_row = 8'b11111111;
+                        3'd3: font_row = 8'b11011011;
+                        3'd4: font_row = 8'b11000011;
+                        3'd5: font_row = 8'b11000011;
+                        3'd6: font_row = 8'b11000011;
+                        default: font_row = 8'b00000000;
+                    endcase
+                end
+                // ---------------- E ----------------
+                4'd3: begin
+                    case (row)
+                        3'd0: font_row = 8'b11111111;
+                        3'd1: font_row = 8'b11000000;
+                        3'd2: font_row = 8'b11000000;
+                        3'd3: font_row = 8'b11111100;
+                        3'd4: font_row = 8'b11000000;
+                        3'd5: font_row = 8'b11000000;
+                        3'd6: font_row = 8'b11111111;
+                        default: font_row = 8'b00000000;
+                    endcase
+                end
+                // ---------------- O ----------------
+                4'd4: begin
+                    case (row)
+                        3'd0: font_row = 8'b00111100;
+                        3'd1: font_row = 8'b01100110;
+                        3'd2: font_row = 8'b11000011;
+                        3'd3: font_row = 8'b11000011;
+                        3'd4: font_row = 8'b11000011;
+                        3'd5: font_row = 8'b01100110;
+                        3'd6: font_row = 8'b00111100;
+                        default: font_row = 8'b00000000;
+                    endcase
+                end
+                // ---------------- V ----------------
+                4'd5: begin
+                    case (row)
+                        3'd0: font_row = 8'b11000011;
+                        3'd1: font_row = 8'b11000011;
+                        3'd2: font_row = 8'b11000011;
+                        3'd3: font_row = 8'b11000011;
+                        3'd4: font_row = 8'b01100110;
+                        3'd5: font_row = 8'b00111100;
+                        3'd6: font_row = 8'b00011000;
+                        default: font_row = 8'b00000000;
+                    endcase
+                end
+                // ---------------- R ----------------
+                4'd6: begin
+                    case (row)
+                        3'd0: font_row = 8'b11111100;
+                        3'd1: font_row = 8'b11000110;
+                        3'd2: font_row = 8'b11000110;
+                        3'd3: font_row = 8'b11111100;
+                        3'd4: font_row = 8'b11101100;
+                        3'd5: font_row = 8'b11000110;
+                        3'd6: font_row = 8'b11000110;
+                        default: font_row = 8'b00000000;
+                    endcase
+                end
+                // ---------------- blank / default --
+                default: begin
+                    font_row = 8'b00000000;
+                end
+            endcase
+        end
+    endfunction
+
+    wire [3:0] this_char  = char_code(char_col);
+    wire [7:0] row_bits   = font_row(this_char, font_y);
+    wire       bit_on     = row_bits[7 - font_x];
+
+    assign pixel_on  = in_region && bit_on;
+    assign pixel_rgb = pixel_on ? 12'hFFF : 12'h000; // white text
+
+endmodule
