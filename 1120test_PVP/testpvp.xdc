@@ -1,5 +1,3 @@
-
-
 ## ==========================
 ## CLOCK (100 MHz)
 ## ==========================
@@ -29,26 +27,40 @@ set_property PACKAGE_PIN M18 [get_ports {p1_btn_jump}]
 set_property IOSTANDARD LVCMOS33 [get_ports {p1_btn_jump}]
 
 set_property PACKAGE_PIN N17 [get_ports {reset_btn}]
-set_property IOSTANDARD LVCMOS33 [get_ports {p1_reset_btn}]
+set_property IOSTANDARD LVCMOS33 [get_ports {reset_btn}]  ; # ooga booga (fixed name)
 
 set_property PACKAGE_PIN P18 [get_ports {p1_btn_atk}]
 set_property IOSTANDARD LVCMOS33 [get_ports {p1_btn_atk}]
 
-# P2 buttons sw for now
-set_property PACKAGE_PIN H17 [get_ports {p2_btn_left}]
-set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_left}]
+# P2 buttons sw for now (old mapping, disabled)  ooga booga
+# set_property PACKAGE_PIN H17 [get_ports {p2_btn_left}]
+# set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_left}]
+#
+# set_property PACKAGE_PIN K15 [get_ports {p2_btn_right}]
+# set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_right}]
+#
+# set_property PACKAGE_PIN J13 [get_ports {p2_btn_jump}]
+# set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_jump}]
+#
+# set_property PACKAGE_PIN R18 [get_ports {p2_btn_atk}]
+# set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_atk}]
 
-set_property PACKAGE_PIN K15 [get_ports {p2_btn_right}]
-set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_right}]
+## P2 buttons on PMOD JA top row (top half)  ooga booga
+## You said: GND, 3V3, then last 4 pins on the top row of JA
+## JA[1]..JA[4] logic pins → C17, D18, E18, G17
 
-set_property PACKAGE_PIN J13 [get_ports {p2_btn_jump}]
-set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_jump}]
+set_property PACKAGE_PIN C17 [get_ports {ja_btn0}]   ; # JA[1] P2 left   ooga booga
+set_property IOSTANDARD LVCMOS33 [get_ports {ja_btn0}]
 
-# set_property PACKAGE_PIN N14 [get_ports {p2_reset_btn}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {p2_reset_btn}]
+set_property PACKAGE_PIN D18 [get_ports {ja_btn1}]   ; # JA[2] P2 right  ooga booga
+set_property IOSTANDARD LVCMOS33 [get_ports {ja_btn1}]
 
-set_property PACKAGE_PIN R18 [get_ports {p2_btn_atk}]
-set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_atk}]        
+set_property PACKAGE_PIN E18 [get_ports {ja_btn2}]   ; # JA[3] P2 jump   ooga booga
+set_property IOSTANDARD LVCMOS33 [get_ports {ja_btn2}]
+
+set_property PACKAGE_PIN G17 [get_ports {ja_btn3}]   ; # JA[4] P2 atk    ooga booga
+set_property IOSTANDARD LVCMOS33 [get_ports {ja_btn3}]
+
 
 ## -- switches
 ## Switches
@@ -136,4 +148,3 @@ set_property IOSTANDARD LVCMOS33 [get_ports {LED6}]
 
 set_property PACKAGE_PIN U13 [get_ports {LED7}]
 set_property IOSTANDARD LVCMOS33 [get_ports {LED7}]
-
