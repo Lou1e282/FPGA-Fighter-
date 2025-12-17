@@ -188,6 +188,10 @@ module player_sprite_mapper (
                     //  sprite_rgb = idle_rgb[0];
                     //d
 
+                     // hit frames
+                     for (i = 0; i < 16; i = i + 1)
+                     hit_rgb[i] <= hit_rgb_raw[i];
+
                     //--------------------------------------------------
                     // Default safety
                     //--------------------------------------------------

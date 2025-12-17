@@ -29,43 +29,31 @@ set_property PACKAGE_PIN M18 [get_ports {p1_btn_jump}]
 set_property IOSTANDARD LVCMOS33 [get_ports {p1_btn_jump}]
 
 set_property PACKAGE_PIN N17 [get_ports {reset_btn}]
-set_property IOSTANDARD LVCMOS33 [get_ports {reset_btn}]
+set_property IOSTANDARD LVCMOS33 [get_ports {p1_reset_btn}]
 
 set_property PACKAGE_PIN P18 [get_ports {p1_btn_atk}]
 set_property IOSTANDARD LVCMOS33 [get_ports {p1_btn_atk}]
 
 # P2 buttons sw for now
-# set_property PACKAGE_PIN H17 [get_ports {p2_btn_left}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_left}]
-
-# set_property PACKAGE_PIN K15 [get_ports {p2_btn_right}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_right}]
-
-# set_property PACKAGE_PIN J13 [get_ports {p2_btn_jump}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_jump}]
-
-# # set_property PACKAGE_PIN N14 [get_ports {p2_reset_btn}]
-# # set_property IOSTANDARD LVCMOS33 [get_ports {p2_reset_btn}]
-
-# set_property PACKAGE_PIN R18 [get_ports {p2_btn_atk}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_atk}]        
-
-set_property PACKAGE_PIN C17 [get_ports {p2_btn_left}]   ; # JA[1] P2 left   ooga booga
+set_property PACKAGE_PIN H17 [get_ports {p2_btn_left}]
 set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_left}]
 
-set_property PACKAGE_PIN D18 [get_ports {p2_btn_right}]   ; # JA[2] P2 right  ooga booga
+set_property PACKAGE_PIN K15 [get_ports {p2_btn_right}]
 set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_right}]
 
-set_property PACKAGE_PIN E18 [get_ports {p2_btn_jump}]   ; # JA[3] P2 jump   ooga booga
+set_property PACKAGE_PIN J13 [get_ports {p2_btn_jump}]
 set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_jump}]
 
-set_property PACKAGE_PIN G17 [get_ports {p2_btn_atk}]   ; # JA[4] P2 atk    ooga booga
-set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_atk}]
+# set_property PACKAGE_PIN N14 [get_ports {p2_reset_btn}]
+# set_property IOSTANDARD LVCMOS33 [get_ports {p2_reset_btn}]
+
+set_property PACKAGE_PIN R18 [get_ports {p2_btn_atk}]
+set_property IOSTANDARD LVCMOS33 [get_ports {p2_btn_atk}]        
 
 ## -- switches
-## Switches btn
-set_property PACKAGE_PIN J15 [get_ports {sw_hitbox}]
-set_property IOSTANDARD LVCMOS33 [get_ports {sw_hitbox}]
+## Switches
+# set_property PACKAGE_PIN A8 [get_ports {sw0}]
+# set_property IOSTANDARD LVCMOS33 [get_ports {sw0}]
 
 # set_property PACKAGE_PIN C11 [get_ports {sw1}]
 # set_property IOSTANDARD LVCMOS33 [get_ports {sw1}]
