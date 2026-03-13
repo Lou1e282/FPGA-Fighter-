@@ -7,11 +7,11 @@ module top_twoplayers (
     input wire p1_btn_jump,
     input wire p1_btn_atk,
 
-    // P2 INPUT
-    input wire p2_btn_left,
-    input wire p2_btn_right,
-    input wire p2_btn_jump,
-    input wire p2_btn_atk,
+    // P2 JA breadboard inputs
+    input wire ja_btn0,    // P2 left  // ooga booga
+    input wire ja_btn1,    // P2 right // ooga booga
+    input wire ja_btn2,    // P2 jump  // ooga booga
+    input wire ja_btn3,    // P2 atk   // ooga booga
 
     output wire hsync,
     output wire vsync,
@@ -57,6 +57,30 @@ module top_twoplayers (
     wire frame_tick = (hcount == 10'd0 && vcount == 10'd0);
 
     // ---------------------
+    // JA button synchronizer for P2
+    // ---------------------
+    reg [1:0] ja0_sync, ja1_sync, ja2_sync, ja3_sync;   // ooga booga
+
+    always @(posedge clk or posedge reset_btn) begin
+        if (reset_btn) begin                                  
+            ja0_sync <= 2'b00;                            
+            ja1_sync <= 2'b00;                               
+            ja2_sync <= 2'b00;                              
+            ja3_sync <= 2'b00;                             
+        end else begin                                       
+            ja0_sync <= {ja0_sync[0], ja_btn0};                 
+            ja1_sync <= {ja1_sync[0], ja_btn1};               
+            ja2_sync <= {ja2_sync[0], ja_btn2};             
+            ja3_sync <= {ja3_sync[0], ja_btn3};                
+        end                                                     
+    end                                                        
+
+    wire p2_left_ja  = ja0_sync[1];                        
+    wire p2_right_ja = ja1_sync[1];                           
+    wire p2_jump_ja  = ja2_sync[1];                          
+    wire p2_atk_ja   = ja3_sync[1];                            
+
+    // ---------------------
     // Player 1 mobility
     // ---------------------
     wire [9:0] p1_pos_x, p1_pos_y;
@@ -70,7 +94,7 @@ module top_twoplayers (
         .clk(pixclk),
         .reset(reset_btn),
         .SCEN(frame_tick),
-        .move_enable(controls_enable),
+        .move_enable(controls_enable),    // ooga booga
         .move_left(p1_btn_left),
         .move_right(p1_btn_right),
         .jump(p1_btn_jump),
@@ -98,9 +122,9 @@ module top_twoplayers (
         .reset(reset_btn),
         .SCEN(frame_tick),
         .move_enable(controls_enable),
-        .move_left(p2_btn_left),
-        .move_right(p2_btn_right),
-        .jump(p2_btn_jump),
+        .move_left(p2_left_ja),      // ooga booga
+        .move_right(p2_right_ja),    // ooga booga
+        .jump(p2_jump_ja),           // ooga booga
         .opponent_x(p1_pos_x),
 
         .pos_x(p2_pos_x),
@@ -141,7 +165,7 @@ module top_twoplayers (
     .reset(reset_btn),
     .SCEN(frame_tick),
     .attack_enable(1'b1),
-    .attack1(p2_btn_atk),
+    .attack1(p2_atk_ja),          // ooga booga
 
     .attack_active(p2_attack_active),
     .attack_damage(p2_attack_damage),
@@ -162,7 +186,7 @@ module top_twoplayers (
         .reset(reset_btn),
         .SCEN(frame_tick),
 
-        .hitstun_active(p1_hitsun),
+        .hitstun_active(1'b0),
         .attack_active(p1_attack_active),
         .attack_frame(p1_attack_frame),
         .move_active(p1_move_active),
@@ -183,7 +207,7 @@ module top_twoplayers (
     .reset(reset_btn),
     .SCEN(frame_tick),
 
-    .hitstun_active(p2_hitstun),
+    .hitstun_active(1'b0),
     .attack_active(p2_attack_active),
     .attack_frame(p2_attack_frame),
     .move_active(p2_move_active),
@@ -480,11 +504,7 @@ module top_twoplayers (
     localparam integer HP_MARGIN_Y = 20;
 
     // Scale HP (0..MAX_HP_PARAM) → pixels (0..HP_BAR_W)
-    wire [15:0] p1_hp_scaled = p1_hp * HP_BAR_W;
-    wire [15:0] p2_hp_scaled = p2_hp * HP_BAR_W;
-
-    wire [9:0]  p1_hp_px     = p1_hp_scaled / MAX_HP_PARAM;
-    wire [9:0]  p2_hp_px     = p2_hp_scaled / MAX_HP_PARAM;
+    // (using p1_hp_px / p2_hp_px from above)
 
     // P1 bar position: top-left
     localparam integer P1_BAR_X0 = HP_MARGIN_X;
@@ -580,26 +600,6 @@ module top_twoplayers (
     // ---------------------
     // Final VGA output
     // ---------------------
-    // wire [11:0] final_rgb =
-    //     p1_atk_edge ? 12'h0F0 :
-    //     p2_atk_edge ? 12'h0F0 :
-    //     p1_hurt_edge? 12'hF00 :
-    //     p2_hurt_edge? 12'hF00 :
-    //     p1_sprite_on ? p1_sprite_rgb :
-    //     p2_sprite_on ? p2_sprite_rgb :
-    //     ground_rgb;
-
-    // wire [11:0] final_rgb =
-    //     p1_hp_region ? p1_hp_rgb :
-    //     p2_hp_region ? p2_hp_rgb :
-    //     p1_atk_edge  ? 12'h0F0 :
-    //     p2_atk_edge  ? 12'h0F0 :
-    //     p1_hurt_edge ? 12'hF00 :
-    //     p2_hurt_edge ? 12'hF00 :
-    //     p1_sprite_on ? p1_sprite_rgb :
-    //     p2_sprite_on ? p2_sprite_rgb :
-    //     ground_rgb;
-
     wire [11:0] final_rgb =
         game_over_on ? game_over_rgb :     // GAME OVER on top of everything
         p1_hp_region ? p1_hp_rgb :
@@ -620,14 +620,12 @@ module top_twoplayers (
     // LED testing purpose
     assign LED0 = p1_move_active;     // Should flicker when moving
     assign LED1 = p1_jump_active;     // Should light during jump
-    assign LED2 = p1_attack_damage;     // ON for full 18-frame attack
+    assign LED2 = p1_attack_damage;   // ON for full 18-frame attack
     assign LED3 = p1_attack_active;   // ON only during hitbox window (frames 4–10)
 
     assign LED4 = p2_move_active;     // Should flicker when moving
     assign LED5 = p2_jump_active;     // Should light during jump
-    assign LED6 = p2_attack_damage;     // ON for full 18-frame attack
+    assign LED6 = p2_attack_damage;   // ON for full 18-frame attack
     assign LED7 = p2_attack_active;   // ON only during hitbox window (frames 4–10)
 
 endmodule
-
-
